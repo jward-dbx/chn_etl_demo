@@ -1,0 +1,13 @@
+# Databricks CLI Configuration Template
+# Copy this file to ~/.databrickscfg and fill in your values
+# Or use: databricks configure --token
+
+[DEFAULT]
+host = https://YOUR-WORKSPACE-URL.cloud.databricks.com
+token = YOUR-PERSONAL-ACCESS-TOKEN
+
+# Optional: Add additional profiles for different workspaces
+# [profile-name]
+# host = https://another-workspace.cloud.databricks.com
+# token = another-token
+

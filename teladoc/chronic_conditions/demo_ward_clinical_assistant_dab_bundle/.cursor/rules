@@ -1,0 +1,60 @@
+# Clinical Assistant Databricks Asset Bundle
+
+## Project Overview
+A Databricks Asset Bundle for chronic care management that includes:
+- Streamlit clinical assistant app with Multi-Agent Supervisor (MAS) integration
+- Data generation and transformation pipeline (bronze → silver → gold)
+- Agent Bricks: Genie Space, Knowledge Assistant, Multi-Agent Supervisor
+- Lakeview dashboard for monitoring chronic care operations
+
+## Key Components
+
+### App (`app/`)
+- `clinical_assistant_app.py` - Streamlit app with chat interface, patient vitals, risk scores
+- `app.yaml` - Databricks App configuration
+- Connects to MAS endpoint: `mas-6e11c42c-endpoint`
+- Uses catalog: `ward_demo`, schema: `justin_ward_demo_ward_clinical_assistant`
+
+### Bundle (`bundle/`)
+- `agent_bricks_service.py` - Service for managing Agent Bricks (KA/MAS/Genie)
+- `bricks_conf.json` - Configuration for Genie, Knowledge Assistant, Multi-Agent Supervisor
+- `deploy_resources.py` - Script to deploy agent bricks from config
+- `dashboard_clinical_ccm_monitoring.lvdash.json` - Lakeview dashboard
+
+### Data (`data/`)
+- `generate_data.py` - Generates synthetic patient data using Faker
+- `transformations.sql` - SQL transformations (bronze → silver → gold medallion)
+- `utils.py` - Utility functions for data operations
+
+### Docs (`docs/`)
+- `pdf/` - PDF documents used as knowledge sources for Knowledge Assistant
+
+## Configuration
+
+### Catalog & Schema
+- Catalog: `ward_demo`
+- Schema: `justin_ward_demo_ward_clinical_assistant`
+- Warehouse: `Clinical Assistant Warehouse`
+
+### Authentication
+- Workspace: `https://fe-vm-vdm-serverless-exom73.cloud.databricks.com`
+- Credentials stored in `.env.local` (gitignored)
+- Databricks CLI configured via `~/.databrickscfg`
+
+### Key Files
+- `databricks.yml` - Main bundle configuration (must be at root)
+- `setup_config.sh` - Interactive setup script for credentials
+- `create_catalog.py` - Creates catalog and schema
+- `run_data_generation.sh` - Runs data generation workflow
+
+## Deployment Flow
+1. Create catalog/schema: Run `create_catalog.py` or create via SQL UI
+2. Deploy bundle: `databricks bundle deploy`
+3. Generate data: `./run_data_generation.sh` or `databricks bundle run demo_workflow`
+
+## Important Notes
+- Catalog must exist before bundle deployment (create via SQL UI)
+- All table references use `ward_demo.justin_ward_demo_ward_clinical_assistant`
+- MAS endpoint coordinates Genie (data queries) and Knowledge Assistant (doc Q&A)
+- Sensitive files (.env.local, config.local) are gitignored
+

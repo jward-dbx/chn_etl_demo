@@ -1,0 +1,120 @@
+bundle:
+  name: ai_demo_generator_demo_demo_ward_clinical_assistant
+variables:
+  project_name:
+    description: AI Demo Generator Project
+    default: demo_ward_clinical_assistant
+  warehouse_name:
+    description: Name of the SQL warehouse to use
+    default: Clinical Assistant Warehouse
+  warehouse_id:
+    lookup:
+      warehouse: ${var.warehouse_name}
+  environment:
+    description: Deployment environment
+    default: dev
+  workspace_path:
+    description: Workspace path where bundle files will be synced
+    default: /Users/justin.ward@databricks.com/demo_ward_clinical_assistant
+  catalog:
+    description: Unity Catalog catalog name
+    default: ward_demo
+  schema:
+    description: Unity Catalog schema name
+    default: justin_ward_demo_ward_clinical_assistant
+  # Workspace URL - can be set via environment variable DATABRICKS_HOST
+  # or will use default from Databricks CLI config
+  workspace_host:
+    description: Databricks workspace URL (optional, uses CLI config if not set)
+    default: ""
+workspace:
+  file_path: ${var.workspace_path}
+sync:
+  include:
+  - bundle/**
+  - data/**
+  - app/**
+  - docs/**
+  - requirements.txt
+targets:
+  dev:
+    default: true
+    mode: production
+    workspace:
+      root_path: ${var.workspace_path}/.bundle/${bundle.name}
+resources:
+  jobs:
+    demo_workflow:
+      name: '[DEMOGEN] - ${var.project_name} - Data Generation and Transformation'
+      tasks:
+      - task_key: generate_data
+        notebook_task:
+          notebook_path: ${var.workspace_path}/data/generate_data
+          base_parameters:
+            catalog: ${var.catalog}
+            bronze_schema: bronze
+            volume: raw_data
+        environment_key: default
+        max_retries: 1
+      - task_key: sql_transformations
+        depends_on:
+        - task_key: generate_data
+        notebook_task:
+          notebook_path: ${var.workspace_path}/data/transformations
+          base_parameters:
+            catalog: ${var.catalog}
+            bronze_schema: bronze
+            silver_schema: silver
+            gold_schema: gold
+        max_retries: 1
+      - task_key: deploy_agent_bricks
+        depends_on:
+        - task_key: sql_transformations
+        notebook_task:
+          notebook_path: ${var.workspace_path}/bundle/deploy_resources
+        environment_key: default
+        max_retries: 1
+      environments:
+      - environment_key: default
+        spec:
+          client: '3'
+          dependencies:
+          - faker>=19.0.0
+          - holidays>=0.35
+          - databricks-sdk>=0.18.0
+          - pyarrow>=10.0.0
+          - pandas>=2.0.0
+          - numpy>=1.24.0
+  schemas:
+    bronze_schema:
+      name: bronze
+      catalog_name: ${var.catalog}
+      comment: Bronze schema for raw data tables
+    silver_schema:
+      name: silver
+      catalog_name: ${var.catalog}
+      comment: Silver schema for cleaned and transformed tables
+    gold_schema:
+      name: gold
+      catalog_name: ${var.catalog}
+      comment: Gold schema for aggregated business tables
+  volumes:
+    raw_data_volume:
+      name: raw_data
+      catalog_name: ${var.catalog}
+      schema_name: bronze
+      volume_type: MANAGED
+      comment: Volume for demo_ward_clinical_assistant raw data and artifacts
+  dashboards:
+    clinical_ccm_monitoring:
+      display_name: ${var.project_name} - Chronic Care Ops & Risk Monitoring
+      file_path: ./bundle/dashboard_clinical_ccm_monitoring.lvdash.json
+      warehouse_id: ${var.warehouse_id}
+  apps:
+    clinical_assistant:
+      name: clinical-assistant
+      source_code_path: ./app
+artifacts:
+  pdf_files:
+    files:
+    - source: ./docs/pdf/**/*

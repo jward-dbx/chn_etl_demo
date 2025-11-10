@@ -1,0 +1,21 @@
+# Configuration Template
+# Copy this file to config.local (or set as environment variables)
+# This file is gitignored - add your actual values here
+
+# Databricks Workspace Configuration
+DATABRICKS_HOST=https://YOUR-WORKSPACE-URL.cloud.databricks.com
+DATABRICKS_TOKEN=YOUR-PERSONAL-ACCESS-TOKEN
+
+# Workspace Path (where files will be synced)
+WORKSPACE_PATH=/Users/YOUR-USERNAME@databricks.com/demo_ward_clinical_assistant
+
+# Unity Catalog Configuration
+CATALOG=ward_demo
+SCHEMA=justin_ward_demo_ward_clinical_assistant
+
+# SQL Warehouse
+WAREHOUSE_NAME=Shared Unity Catalog Serverless
+
+# Project Name
+PROJECT_NAME=demo_ward_clinical_assistant
+

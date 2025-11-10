@@ -1,0 +1,293 @@
+{
+  "genie_space": {
+    "config": {
+      "id": "01f0be2ba4821915846537ddfcb01861",
+      "space_id": "01f0be2ba4821915846537ddfcb01861",
+      "display_name": "Chronic Care Ops & Risk Monitoring - Genie AI-BI",
+      "description": "Genie space for demo_ward_clinical_assistant demo with curated questions and SQL instructions",
+      "warehouse_id": "862f1d757f0424f7",
+      "created_timestamp": 1762775510137,
+      "last_updated_timestamp": 1762775510546,
+      "table_identifiers": [
+        "ward_demo.gold.gold_device_ingestion_timeseries",
+        "ward_demo.gold.gold_bp_quality_timeseries",
+        "ward_demo.gold.gold_encounter_signal_timeseries",
+        "ward_demo.gold.gold_patient_risk_timeseries",
+        "ward_demo.gold.gold_patient_risk_weekly",
+        "ward_demo.gold.gold_care_actions_weekly",
+        "ward_demo.gold.gold_cumulative_care_cost",
+        "ward_demo.gold.gold_root_cause_alignment",
+        "ward_demo.gold.gold_global_filters_bridge",
+        "ward_demo.gold.gold_date_spine",
+        "ward_demo.gold.gold_counter_valid_readings_last7",
+        "ward_demo.gold.gold_counter_avg_daily_risk_high_last7",
+        "ward_demo.gold.gold_counter_care_actions_executed_last14",
+        "ward_demo.gold.gold_counter_active_patients",
+        "ward_demo.silver.silver_device_readings",
+        "ward_demo.silver.silver_encounter_notes",
+        "ward_demo.silver.silver_care_actions",
+        "ward_demo.silver.silver_device_change_log",
+        "ward_demo.silver.silver_medication_lists",
+        "ward_demo.silver.silver_patient_master"
+      ],
+      "user_id": 8192109868239907,
+      "run_as_type": "VIEWER",
+      "folder_node_internal_name": "tree/4362073218378082"
+    },
+    "sample_questions": [],
+    "benchmarks": [],
+    "instructions": [
+      {
+        "title": "Notes",
+        "content": "This Genie space supports executive and operational monitoring of chronic care device ingestion quality, encounter signals, patient risk, care actions, and cost exposure for CareSphere Telehealth during the 2025-08-01..2025-11-10 window. It highlights the firmware-related incident from Oct 2 to Oct 21, 2025 that impacted DEVCO-GM glucometers (v3.9) and DEVCO-BP BP cuffs (v2.7) in Central and West, leading to a ~28% drop in valid glucose readings, increased missing BP diastolic fields, elevated diet non-adherence mentions, and a 1.6x rise in risk among high-risk diabetics. A configuration push on Oct 12 mitigated errors, and a vendor hotfix on Oct 21 restored metrics to baseline.\n\nData model guidance:\n- Prefer gold tables for pre-aggregated KPIs: device ingestion timeseries, BP quality, encounter signals, patient risk (daily/weekly), care actions (weekly), cumulative cost, and root-cause alignment.\n- Use silver tables for drill-down and detailed analysis: device_readings for per-reading validation and error_code distribution; encounter_notes for patient-level signal inspection; care_actions for executed actions and cost at the row level; device_change_log for dated configuration context.\n\nBusiness logic highlights:\n- Ingestion anomaly window is 2025-10-02..2025-10-21 in Central and West, primarily affecting device_type in {glucose, bp}; weight remained stable.\n- Error codes to monitor: BT-GM-3921 for glucometers and BT-BP-2710 for BP cuffs.\n- Risk elevation concentrated in high-risk diabetics; Next Best Action pivoted toward nurse_outreach and medication_review, increasing workload ~22-28%.\n- Cumulative care cost exposure increases during the incident and flattens after Oct 21.\n\nData quality notes:\n- Weekend activity is lower by design (30-40% dips); residual weekend gaps persisted until Oct 21.\n- Small percentages of nulls may exist; gold tables handle aggregation and rates, while silver tables preserve raw flags and error codes.",
+        "instruction_type": "TEXT_INSTRUCTION"
+      },
+      {
+        "title": "Valid Readings by Day, Device, Region",
+        "content": "-- Daily valid readings by device_type and region\nSELECT date, region, device_type, readings_total, readings_valid, valid_rate\nFROM ward_demo.gold.gold_device_ingestion_timeseries\nWHERE date BETWEEN '2025-09-15' AND '2025-11-10'\nORDER BY date, region, device_type;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "BP Diastolic Missing Rate Trend",
+        "content": "-- Daily BP diastolic missing rate by region\nSELECT date, region, bp_readings, diastolic_missing, missing_rate_diastolic\nFROM ward_demo.gold.gold_bp_quality_timeseries\nWHERE date BETWEEN '2025-09-15' AND '2025-11-10'\nORDER BY date, region;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Risk Score Distribution by Tier and Condition",
+        "content": "-- Weekly risk stratification distribution by tier and condition\nSELECT week_start, region, risk_tier, condition, avg_risk_score, patient_days\nFROM ward_demo.gold.gold_patient_risk_weekly\nWHERE week_start BETWEEN TIMESTAMP('2025-09-01') AND TIMESTAMP('2025-11-10')\nORDER BY week_start, region, risk_tier, condition;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Align Ingestion Shifts to Change Log",
+        "content": "-- Join alignment table to see dated changes matching valid_rate shifts and error codes\nSELECT date, region, device_type, readings_total, readings_valid, valid_rate, valid_rate_lag7, delta_vs_7d,\n       vendor, version, change_type, error_codes, notes, error_events\nFROM ward_demo.gold.gold_root_cause_alignment\nWHERE date BETWEEN '2025-09-15' AND '2025-11-10'\nORDER BY date, region, device_type;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Care Actions Mix and Cost Weekly",
+        "content": "-- Weekly care actions mix and execution, with average cost\nSELECT week_start, region, condition, action_type, actions_total, actions_executed, execute_rate, avg_cost_usd\nFROM ward_demo.gold.gold_care_actions_weekly\nWHERE week_start BETWEEN TIMESTAMP('2025-09-01') AND TIMESTAMP('2025-11-10')\nORDER BY week_start, region, condition, action_type;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Cumulative Care Cost by Region and Condition",
+        "content": "-- Daily executed cost and running cumulative totals\nSELECT date, region, condition, executed_cost_usd, running_total_cost_usd\nFROM ward_demo.gold.gold_cumulative_care_cost\nWHERE date BETWEEN '2025-09-15' AND '2025-11-10'\nORDER BY date, region, condition;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Encounter Summarization Signals",
+        "content": "-- Daily diet non-adherence and med adherence issue rates by region\nSELECT date, region, pct_notes_with_diet_non_adherence, pct_notes_with_med_adherence_issues, notes_count\nFROM ward_demo.gold.gold_encounter_signal_timeseries\nWHERE date BETWEEN '2025-09-15' AND '2025-11-10'\nORDER BY date, region;",
+        "instruction_type": "SQL_INSTRUCTION"
+      }
+    ]
+  },
+  "knowledge_assistant": {
+    "config": {
+      "knowledge_assistant": {
+        "tile": {
+          "tile_id": "01af0803-c222-4ee8-b01a-33af77099141",
+          "name": "DBGEN_CareSphere_CCM_Ops_and_Firmware_Incident_Assistant",
+          "tile_type": "KA",
+          "mlflow_experiment_id": "4362073218378079",
+          "creation_timestamp_ms": 1762775500744,
+          "last_updated_timestamp_ms": 1762775514586,
+          "serving_endpoint_name": "ka-01af0803-endpoint",
+          "creator": "justin.ward@databricks.com",
+          "creator_display_name": "Justin Ward",
+          "description": "AI assistant for CareSphere Telehealth\u2019s chronic care operations during the Oct 2025 firmware incident. It answers questions about device ingestion quality, vitals shifts, encounter and adherence signals, change logs (rollout, config push, hotfix), error codes, model behavior (Risk Stratification, Next Best Action), and operational impacts (care workload and cost exposure) across regions and risk tiers.",
+          "instructions": "You are a professional clinical-ops assistant. Use the indexed PDFs as the primary source of truth. When asked about the Oct 2025 incident: 1) tie timelines (2025-10-02 rollout, 2025-10-12 config push, 2025-10-21 hotfix) to observed metrics; 2) cite device/vendor details (DEVCO-GM v3.9, DEVCO-BP v2.7) and error codes (e.g., BT-GM-39xx, BT-BP-27xx) when relevant; 3) explain impacts on glucose and BP ingestion (28% glucose drop, diastolic nulls), encounter signals (diet non-adherence uptick, adherence flags for Metformin/ACE), and model outputs (1.6x risk in high-risk T2D, NBA shift to nurse check-ins/med review); 4) distinguish baseline vs incident vs recovery; 5) be concise, actionable, and note regional scope (Central/West). When uncertain, say you need to check the documents and ask a clarifying follow-up.",
+          "evaluation_run_exists": false,
+          "acl_enabled": true
+        },
+        "knowledge_sources": [
+          {
+            "files_source": {
+              "name": "care_ops_playbooks_and_device_firmware_notes",
+              "description": "",
+              "files": {
+                "path": "/Volumes/ward_demo/bronze/raw_data/pdf/care_ops_playbooks_and_device_firmware_notes"
+              }
+            },
+            "state": "KNOWLEDGE_SOURCE_STATE_UPDATED",
+            "last_successful_update_timestamp_ms": 1762775500744,
+            "latest_update_timestamp_ms": 1762775500744,
+            "knowledge_source_id": "3e6171c8-fa90-4fb2-a78e-128c0973f561",
+            "indexed_row_count": 73,
+            "file_source_index_info": {
+              "summary": {
+                "total_files": 9,
+                "success_files": 9,
+                "skipped_files": 0,
+                "failed_files": 0,
+                "parsed_files": 9
+              },
+              "error": "",
+              "files_by_type": {
+                "pdf": 9
+              }
+            }
+          }
+        ],
+        "status": {
+          "endpoint_status": "ONLINE"
+        }
+      }
+    },
+    "knowledge_sources": [
+      {
+        "files_source": {
+          "name": "care_ops_playbooks_and_device_firmware_notes",
+          "description": "",
+          "files": {
+            "path": "/Volumes/ward_demo/justin_ward_demo_ward_clinical_assistant/raw_data/pdf/care_ops_playbooks_and_device_firmware_notes"
+          },
+          "type": "files"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "question": "Which features are most influential in the risk stratification model, and how do scores change during device ingestion anomalies?",
+        "guidelines": [
+          "The answer should list top features, describe their impact on risk scores, and explain how anomalies affect these scores."
+        ]
+      },
+      {
+        "question": "How should clinicians and technical staff diagnose and resolve issues related to error codes BT-GM-3921 and BT-BP-2710?",
+        "guidelines": [
+          "The answer should include steps for error identification, common causes (such as firmware incompatibility or connectivity issues), and corrective actions."
+        ]
+      },
+      {
+        "question": "What are the key points clinicians should communicate when reaching out to patients experiencing adherence issues during the firmware anomaly period?",
+        "guidelines": [
+          "The answer should summarize the main topics in the scripts, such as reassurance, data interpretation, and recommended next steps, without reproducing the scripts verbatim."
+        ]
+      },
+      {
+        "question": "How has device data quality, particularly for glucose and blood pressure readings, changed after the firmware rollout and hotfix?",
+        "guidelines": [
+          "The answer should reference data quality metrics and trends, indicating deviations from baseline and the effectiveness of fixes."
+        ]
+      },
+      {
+        "question": "What was the quantitative impact of the firmware rollout on care workload and patient risk metrics, and how did these change after remediation?",
+        "guidelines": [
+          "The answer should include specific figures or trends demonstrating the impact and recovery, with references to the analyzed metrics."
+        ]
+      },
+      {
+        "question": "What issues does the DEVCO-BP v2.7 hotfix specifically address, and what improvements does it bring?",
+        "guidelines": [
+          "The answer should identify the fixed error codes, describe the expected data restoration, and reference the change log entries related to the hotfix."
+        ]
+      },
+      {
+        "question": "What are the steps outlined for deploying the DEVCO-GM v3.9 firmware update and managing initial anomalies?",
+        "guidelines": [
+          "The answer should outline the deployment procedure, including pre-deployment checks, roll-out phases, and post-deployment validation, as well as initial troubleshooting steps for ingestion drops."
+        ]
+      },
+      {
+        "question": "What are the recommended QA procedures to ensure the Clinical Note Generator produces accurate summaries during device anomalies?",
+        "guidelines": [
+          "The answer should list validation steps, review criteria, and considerations for anomaly periods, emphasizing accuracy and consistency."
+        ]
+      },
+      {
+        "question": "What are the key thresholds that trigger specific Next Best Action recommendations during high-risk periods?",
+        "guidelines": [
+          "The answer should specify the thresholds for glucose, risk scores, and other signals, and link them to the recommended clinician or operational responses."
+        ]
+      }
+    ]
+  },
+  "multi_agent_supervisor": {
+    "config": {
+      "multi_agent_supervisor": {
+        "tile": {
+          "tile_id": "6e11c42c-acc6-423e-a1cd-b2c6051da0f3",
+          "name": "DBGEN_CCM_Ops_and_Risk_Assistant",
+          "tile_type": "MAS",
+          "mlflow_experiment_id": "4362073218378099",
+          "creation_timestamp_ms": 1762775595711,
+          "last_updated_timestamp_ms": 1762775604649,
+          "serving_endpoint_name": "mas-6e11c42c-endpoint",
+          "creator": "justin.ward@databricks.com",
+          "creator_display_name": "Justin Ward",
+          "description": "Supervisor that coordinates Genie (SQL/data exploration) and Knowledge Assistant (docs Q&A) to monitor chronic care operations, device ingestion quality, clinical risk, and care workload during the 2025-10-02..2025-10-21 firmware incident and recovery.",
+          "instructions": "You are the Chronic Care Ops & Risk Assistant for CareSphere Telehealth. Route quantitative, time-bound, and metric-focused questions to the Genie Data Explorer. Route policy, playbook, troubleshooting, and model-interpretation questions to the Knowledge Assistant. For combined questions (e.g., align data anomalies with change logs and remediation steps), first retrieve quantitative evidence from Genie (e.g., valid_rate deltas, risk score shifts), then augment with KA guidance (e.g., firmware notes, error-code procedures), and synthesize. Always honor the demo\u2019s timeline (2025-08-01..2025-11-10) and use the exact regions {East, Central, West}, device types {glucose, bp, weight}, conditions {diabetes, hypertension}, and action types {nurse_outreach, medication_review, nutrition_check_in, device_troubleshoot}. Maintain a concise, executive-friendly tone with actionable next steps.",
+          "evaluation_run_exists": false,
+          "acl_enabled": true
+        },
+        "agents": [
+          {
+            "name": "Knowledge Assistant",
+            "description": "Knowledge Assistant is connected to the PDF collection: care_ops_playbooks_and_device_firmware_notes. The collection (10 documents, ~6 pages each) includes:\n- Device vendor bulletins and firmware notes: DEVCO-GM v3.9 (glucometer), DEVCO-BP v2.7 (BP cuff), known error codes (BT-GM-39xx, BT-BP-27xx), Bluetooth stack update details, expected symptoms (valid reading drops, diastolic field nulls), and hotfix summaries.\n- Ingestion troubleshooting playbooks: step-by-step guides for diagnosing ingestion failures, connection retries, and weekend gap handling; mapping of error codes (e.g., BT-GM-3921, BT-BP-2710) to root causes and actions.\n- Clinician outreach scripts and Next Best Action policy thresholds: e.g., fasting glucose >140 mg/dL triggers nurse check-in; criteria for medication review; triage workflows for high-risk tiers.\n- Risk stratification model cards: features, thresholds, and guidance on interpreting avg_risk_score movements; documentation on the 1.6x elevation scenario for high-risk diabetics during degraded ingestion.\n- Clinical Note Generator QA guidance: how to review generated notes and quality checks.\n\nQuestions KA can answer\n- What are the documented symptoms and remediation steps for error codes BT-GM-3921 and BT-BP-2710?\n- What are the Next Best Action thresholds for initiating nurse_outreach or medication_review for diabetes and hypertension patients?\n- How should clinicians handle weekend ingestion gaps per the playbook?\n- What does the risk model card say about interpreting a 1.6x increase in avg_risk_score for high-risk diabetics?\n- What QA steps are recommended when using the Clinical Note Generator?\n\nDomain expertise areas\n- Device firmware rollout guidance, troubleshooting Bluetooth ingestion, clinical intervention playbooks, risk model interpretation, and operational policies for CCM programs during incidents.\n",
+            "agent_type": "serving-endpoint",
+            "serving_endpoint": {
+              "name": "ka-01af0803-endpoint"
+            }
+          },
+          {
+            "name": "Genie Data Explorer",
+            "description": "Genie is the SQL/data exploration agent for the ward_demo dataset. It can query and join the following silver and gold tables with exact columns:\n\nAvailable tables and key columns\n1) ward_demo.silver.silver_patient_master\n- Columns: patient_id, region, condition, risk_tier, program, enrollment_date, active_flag\n- Uses: segment counts by region/condition/risk_tier; active patients.\n\n2) ward_demo.silver.silver_device_readings\n- Columns: reading_id, patient_id, region, device_type, vendor, firmware_version, reading_time, date, week_start, glucose_mg_dl, bp_systolic_mm_hg, bp_diastolic_mm_hg, weight_kg, valid_flag, error_code, bp_missing_diastolic\n- Uses: daily/weekly ingestion volumes, valid vs total readings, BP diastolic missing, vendor/firmware/error_code analysis.\n\n3) ward_demo.silver.silver_encounter_notes\n- Columns: note_id, patient_id, region, note_time, date, week_start, diet_non_adherence_flag, med_adherence_flag\n- Uses: daily pct of diet non-adherence and medication adherence issues by region.\n\n4) ward_demo.silver.silver_medication_lists\n- Columns: list_id, patient_id, region, snapshot_time, date, week_start, med_class, change_type\n- Uses: medication change frequencies by class/region/week.\n\n5) ward_demo.silver.silver_care_actions\n- Columns: action_id, patient_id, region, condition, action_time, date, week_start, action_type, executed_flag, estimated_cost_usd\n- Uses: action mix (nurse_outreach, medication_review, nutrition_check_in, device_troubleshoot), executed rates, costs.\n\n6) ward_demo.silver.silver_device_change_log\n- Columns: change_id, change_date, date, vendor, device_type, version, regions_scope, change_type, error_codes, notes\n- Uses: align dated rollout/config_push/hotfix with ingestion anomalies.\n\n7) ward_demo.gold.gold_date_spine\n- Columns: date, dow, is_weekend, week_start, month\n- Uses: dense calendar joins for daily series 2025-08-01..2025-11-10.\n\n8) ward_demo.gold.gold_device_ingestion_timeseries\n- Columns: date, region, device_type, readings_total, readings_valid, valid_rate\n- Uses: daily valid_rate and volume by device_type/region; identify ~28% glucose drop after 2025-10-02 in Central/West; normalization after 2025-10-21.\n\n9) ward_demo.gold.gold_bp_quality_timeseries\n- Columns: date, region, bp_readings, diastolic_missing, missing_rate_diastolic\n- Uses: daily BP diastolic missing rate spikes in Central/West post-2025-10-02; recovery patterns.\n\n10) ward_demo.gold.gold_encounter_signal_timeseries\n- Columns: date, region, pct_notes_with_diet_non_adherence, pct_notes_with_med_adherence_issues, notes_count\n- Uses: daily encounter signal trends; uptick to ~27-31% during incident window.\n\n11) ward_demo.gold.gold_patient_risk_timeseries\n- Columns: date, region, risk_tier, condition, avg_risk_score, patient_days\n- Uses: daily risk elevation (1.6x for high-risk diabetics during 2025-10-02..2025-10-21), segment comparisons, region filtering.\n\n12) ward_demo.gold.gold_patient_risk_weekly\n- Columns: week_start, region, risk_tier, condition, avg_risk_score, patient_days\n- Uses: weekly risk distribution across tiers/conditions; normalization post-2025-10-21.\n\n13) ward_demo.gold.gold_care_actions_weekly\n- Columns: week_start, region, condition, action_type, actions_total, actions_executed, execute_rate, avg_cost_usd\n- Uses: weekly action mix shifts toward nurse_outreach and medication_review; execution rate and unit cost.\n\n14) ward_demo.gold.gold_cumulative_care_cost\n- Columns: date, region, condition, executed_cost_usd, running_total_cost_usd\n- Uses: daily executed cost and cumulative exposure; rise during incident, flatten after 2025-10-21.\n\n15) ward_demo.gold.gold_root_cause_alignment\n- Columns: date, region, device_type, readings_total, readings_valid, valid_rate, valid_rate_lag7, delta_vs_7d, vendor, version, change_type, error_codes, notes, error_events\n- Uses: alignment of ingestion valid_rate shifts with change log entries and error events to validate 2025-10-02 rollout, 2025-10-12 config push, 2025-10-21 hotfix.\n\n16) ward_demo.gold.gold_global_filters_bridge\n- Columns: date, region, field_name, field_value\n- Uses: populate filter values for region, device_type, risk_tier, condition, action_type.\n\nKPIs and calculations Genie can provide\n- Valid device readings and valid_rate by date/region/device_type (from gold_device_ingestion_timeseries)\n- BP diastolic missing_rate_diastolic by date/region (from gold_bp_quality_timeseries)\n- Encounter summarization rates: pct_notes_with_diet_non_adherence and pct_notes_with_med_adherence_issues (from gold_encounter_signal_timeseries)\n- Risk metrics: avg_risk_score by date/week, region, risk_tier, condition; patient_days (from gold_patient_risk_timeseries/weekly)\n- Care operations: actions_total, actions_executed, execute_rate, avg_cost_usd by week, region, action_type (from gold_care_actions_weekly); cumulative running_total_cost_usd by date/region/condition (from gold_cumulative_care_cost)\n- Counts: active CCM patients (gold_counter_active_patients), valid_readings_last7, actions_executed_last14, avg_daily_risk_high_last7 (from corresponding gold_counter_* tables if present in workspace)\n- Root-cause alignment deltas vs 7d lag and associated change_type/error_codes (from gold_root_cause_alignment)\n\nBusiness questions Genie can answer (examples)\n- When did ingestion quality shift by device_type and region, and by how much versus the prior 7-day baseline?\n- Which regions and risk_tiers showed the highest avg_risk_score during 2025-10-02..2025-10-21, especially for condition='diabetes'?\n- How did the weekly care action mix change (nurse_outreach vs medication_review), and when did execute_rate normalize?\n- What cumulative care cost exposure accrued by region and condition during the incident window?\n- Which change_log entries (vendor/version/change_type) align with valid_rate drops and what error_codes were most frequent?\n\nData exploration capabilities\n- Time-series analysis (daily and weekly), moving baselines (e.g., compare to valid_rate_lag7), cohort filtering by region/condition/risk_tier/device_type, joins across silver and gold tables (e.g., silver_device_change_log with gold_root_cause_alignment), aggregations, pivots, and drill-down to vendor/firmware/error_code combinations. Genie can produce grouped, filtered, and ranked outputs aligned to the demo\u2019s timeline (2025-08-01..2025-11-10).",
+            "agent_type": "genie-space",
+            "genie_space": {
+              "id": "01f0be2ba4821915846537ddfcb01861"
+            }
+          }
+        ],
+        "status": {
+          "endpoint_status": "ONLINE"
+        }
+      }
+    },
+    "examples": [
+      {
+        "question": "What thresholds in the Next Best Action policy trigger a nurse check-in or medication review for elevated fasting glucose or worsening BP?",
+        "guidelines": []
+      },
+      {
+        "question": "On which date did valid glucose readings first drop in Central and West, and what was the change in valid_rate versus the prior 7-day average?",
+        "guidelines": []
+      },
+      {
+        "question": "List the device change_log entries (change_date, vendor, device_type, version, regions_scope, change_type, error_codes) between 2025-10-01 and 2025-10-22 and align them with valid_rate deltas from gold_root_cause_alignment.",
+        "guidelines": []
+      },
+      {
+        "question": "What is the cumulative running_total_cost_usd for diabetes vs hypertension in each region during 2025-10-02..2025-10-21, and how much did it flatten after 2025-10-21?",
+        "guidelines": []
+      },
+      {
+        "question": "How did the weekly care action mix (actions_executed) shift for nurse_outreach vs medication_review in Central and West during the weeks starting 2025-09-29 through 2025-10-27?",
+        "guidelines": []
+      },
+      {
+        "question": "According to the playbooks, what are the troubleshooting steps for error code BT-GM-3921 on DEVCO-GM v3.9 devices?",
+        "guidelines": []
+      },
+      {
+        "question": "The high-risk diabetics\u2019 avg_risk_score rose about 1.6x during the incident\u2014what model card guidance should clinicians follow when interpreting this change?",
+        "guidelines": []
+      },
+      {
+        "question": "Show daily BP diastolic missing_rate_diastolic by region from 2025-09-15 to 2025-11-10 and highlight the peak during the incident.",
+        "guidelines": []
+      },
+      {
+        "question": "Which metrics had fully returned to baseline by 2025-10-21, and which still showed weekend residual gaps according to the data series?",
+        "guidelines": []
+      },
+      {
+        "question": "Which risk_tier and condition segments had the highest avg_risk_score during 2025-10-02..2025-10-21, and how did they compare to the week after 2025-10-21?",
+        "guidelines": []
+      }
+    ]
+  },
+  "dashboards": {
+    "clinical_ccm_monitoring": {
+      "title": "Chronic Care Ops & Risk Monitoring",
+      "id": "01f0be2bc41e16e2bf6ffa72a5c4fa8a"
+    }
+  }
+}

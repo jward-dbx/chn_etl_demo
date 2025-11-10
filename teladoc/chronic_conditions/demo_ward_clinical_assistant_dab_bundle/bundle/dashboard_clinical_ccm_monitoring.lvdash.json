@@ -1,0 +1,1425 @@
+{
+  "datasets": [
+    {
+      "name": "ds_patients_active_counter",
+      "displayName": "KPI: Active CCM Patients",
+      "queryLines": [
+        "SELECT active_ccm_patients FROM ward_demo.gold.gold_counter_active_patients ORDER BY active_ccm_patients DESC "
+      ]
+    },
+    {
+      "name": "ds_valid_readings_last7_counter",
+      "displayName": "KPI: Valid Readings Last 7 Days",
+      "queryLines": [
+        "SELECT valid_readings_last7 FROM ward_demo.gold.gold_counter_valid_readings_last7 ORDER BY valid_readings_last7 DESC "
+      ]
+    },
+    {
+      "name": "ds_avg_daily_risk_high_last7_counter",
+      "displayName": "KPI: Avg Daily Risk (High Tier, Last 7)",
+      "queryLines": [
+        "SELECT avg_daily_risk_high_last7 FROM ward_demo.gold.gold_counter_avg_daily_risk_high_last7 ORDER BY avg_daily_risk_high_last7 DESC "
+      ]
+    },
+    {
+      "name": "ds_care_actions_executed_last14_counter",
+      "displayName": "KPI: Care Actions Executed Last 14 Days",
+      "queryLines": [
+        "SELECT actions_executed_last14 FROM ward_demo.gold.gold_counter_care_actions_executed_last14 ORDER BY actions_executed_last14 DESC "
+      ]
+    },
+    {
+      "name": "ds_device_ingestion_timeseries",
+      "displayName": "Device Ingestion Timeseries",
+      "queryLines": [
+        "SELECT date, region, device_type, readings_total, readings_valid, valid_rate, CASE WHEN date BETWEEN DATE('2025-10-02') AND DATE('2025-10-21') THEN true ELSE false END AS is_anomaly_window FROM ward_demo.gold.gold_device_ingestion_timeseries ORDER BY date ASC, device_type ASC, region ASC "
+      ]
+    },
+    {
+      "name": "ds_bp_quality_timeseries",
+      "displayName": "BP Quality Timeseries",
+      "queryLines": [
+        "SELECT date, region, bp_readings, diastolic_missing, missing_rate_diastolic, CASE WHEN date BETWEEN DATE('2025-10-02') AND DATE('2025-10-21') THEN true ELSE false END AS is_anomaly_window FROM ward_demo.gold.gold_bp_quality_timeseries ORDER BY date ASC, region ASC "
+      ]
+    },
+    {
+      "name": "ds_patient_risk_weekly",
+      "displayName": "Patient Risk Weekly",
+      "queryLines": [
+        "SELECT week_start, region, risk_tier, condition, avg_risk_score, patient_days FROM ward_demo.gold.gold_patient_risk_weekly ORDER BY week_start ASC, region ASC, risk_tier ASC "
+      ]
+    },
+    {
+      "name": "ds_encounter_signal_timeseries",
+      "displayName": "Encounter Signals Timeseries",
+      "queryLines": [
+        "SELECT date, region, pct_notes_with_diet_non_adherence, pct_notes_with_med_adherence_issues, notes_count, CASE WHEN date BETWEEN DATE('2025-10-02') AND DATE('2025-10-21') THEN true ELSE false END AS is_anomaly_window FROM ward_demo.gold.gold_encounter_signal_timeseries ORDER BY date ASC, region ASC "
+      ]
+    },
+    {
+      "name": "ds_care_actions_weekly",
+      "displayName": "Care Actions Weekly",
+      "queryLines": [
+        "SELECT week_start, region, condition, action_type, actions_total, actions_executed, execute_rate, avg_cost_usd, (actions_executed * avg_cost_usd) AS executed_cost_usd_est FROM ward_demo.gold.gold_care_actions_weekly ORDER BY week_start ASC, region ASC, action_type ASC "
+      ]
+    },
+    {
+      "name": "ds_device_change_log",
+      "displayName": "Device Change Log",
+      "queryLines": [
+        "SELECT change_date, date, vendor, device_type, version, regions_scope, change_type, error_codes, notes FROM ward_demo.silver.silver_device_change_log ORDER BY change_date DESC "
+      ]
+    },
+    {
+      "name": "ds_cumulative_care_cost",
+      "displayName": "Cumulative Care Cost",
+      "queryLines": [
+        "SELECT date, region, condition, executed_cost_usd, running_total_cost_usd FROM ward_demo.gold.gold_cumulative_care_cost ORDER BY date ASC, region ASC "
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "clinical_ccm_monitoring",
+      "displayName": "Chronic Care Ops & Risk Monitoring",
+      "layout": [
+        {
+          "widget": {
+            "name": "header_main",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Chronic Care Ops & Risk Monitoring\n",
+                "Executive monitoring of ingestion quality, encounter signals, risk, and care workload during the 2025-10-02..2025-10-21 firmware anomaly and staged recovery.\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_active_patients",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_patients_active_counter",
+                  "fields": [
+                    {
+                      "name": "sum(active_ccm_patients)",
+                      "expression": "SUM(`active_ccm_patients`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(active_ccm_patients)",
+                  "displayName": "Active CCM Patients",
+                  "format": {
+                    "type": "number",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "title": "Active CCM Patients",
+                "showTitle": true,
+                "description": "Currently enrolled CCM patients with device activity in the last 30 days.",
+                "showDescription": true
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_valid_readings_last7",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_valid_readings_last7_counter",
+                  "fields": [
+                    {
+                      "name": "sum(valid_readings_last7)",
+                      "expression": "SUM(`valid_readings_last7`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(valid_readings_last7)",
+                  "displayName": "Valid Device Readings (Last 7 Days)",
+                  "format": {
+                    "type": "number",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "title": "Valid Device Readings (Last 7 Days)",
+                "showTitle": true,
+                "description": "Trailing 7-day valid readings across glucose, BP, and weight.",
+                "showDescription": true
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 2,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_avg_daily_risk_high_last7",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_avg_daily_risk_high_last7_counter",
+                  "fields": [
+                    {
+                      "name": "avg(avg_daily_risk_high_last7)",
+                      "expression": "AVG(`avg_daily_risk_high_last7`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "avg(avg_daily_risk_high_last7)",
+                  "displayName": "Avg Daily Risk Score (High Tier)",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "title": "Avg Daily Risk Score (High Tier, Last 7 Days)",
+                "showTitle": true,
+                "description": "Average daily hospitalization risk for high-risk diabetics.",
+                "showDescription": true
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 2,
+            "width": 1,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_actions_executed_last14",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_care_actions_executed_last14_counter",
+                  "fields": [
+                    {
+                      "name": "sum(actions_executed_last14)",
+                      "expression": "SUM(`actions_executed_last14`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(actions_executed_last14)",
+                  "displayName": "Care Actions Executed (Last 14 Days)",
+                  "format": {
+                    "type": "number",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "title": "Care Actions Executed (Last 14 Days)",
+                "showTitle": true,
+                "description": "Sum of executed nurse outreach, medication review, nutrition check-in, and device troubleshoot actions.",
+                "showDescription": true
+              }
+            }
+          },
+          "position": {
+            "x": 5,
+            "y": 2,
+            "width": 1,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "section_overview",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Incident Overview & Recovery Trace\n",
+                "Post 2025-10-02 rollout, glucose valid readings dropped and BP diastolic missing spiked in Central/West. A 2025-10-12 config push restored most ingestion, with full normalization after the 2025-10-21 hotfix.\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "line_valid_readings_by_day",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_device_ingestion_timeseries",
+                  "fields": [
+                    {
+                      "name": "daily(date)",
+                      "expression": "DATE_TRUNC(\"DAY\", `date`)"
+                    },
+                    {
+                      "name": "device_type",
+                      "expression": "`device_type`"
+                    },
+                    {
+                      "name": "sum(readings_valid)",
+                      "expression": "SUM(`readings_valid`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "daily(date)",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "axis": {
+                    "title": "Date"
+                  },
+                  "displayName": "Date"
+                },
+                "y": {
+                  "fieldName": "sum(readings_valid)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "axis": {
+                    "title": "Valid Readings"
+                  },
+                  "displayName": "Valid Readings"
+                },
+                "color": {
+                  "fieldName": "device_type",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Device Type"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Valid Readings by Day (All Devices)",
+                "description": "X: date; Y: valid readings; line color: device_type. Glucose and BP show post-rollout drop; weight remains stable."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 3,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "line_bp_diastolic_missing_rate_by_region",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_bp_quality_timeseries",
+                  "fields": [
+                    {
+                      "name": "daily(date)",
+                      "expression": "DATE_TRUNC(\"DAY\", `date`)"
+                    },
+                    {
+                      "name": "region",
+                      "expression": "`region`"
+                    },
+                    {
+                      "name": "avg(missing_rate_diastolic)",
+                      "expression": "AVG(`missing_rate_diastolic`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "daily(date)",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "axis": {
+                    "title": "Date"
+                  },
+                  "displayName": "Date"
+                },
+                "y": {
+                  "fieldName": "avg(missing_rate_diastolic)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  },
+                  "axis": {
+                    "title": "BP Diastolic Missing Rate (%)"
+                  },
+                  "displayName": "Missing Rate (%)"
+                },
+                "color": {
+                  "fieldName": "region",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Region"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "BP Diastolic Missing Rate (Daily) by Region",
+                "description": "Central/West spike after 2025-10-02; recovery after 2025-10-12; residual weekend gaps until 2025-10-21."
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 7,
+            "width": 3,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_risk_score_distribution_weekly",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_patient_risk_weekly",
+                  "fields": [
+                    {
+                      "name": "weekly(week_start)",
+                      "expression": "DATE_TRUNC(\"WEEK\", `week_start`)"
+                    },
+                    {
+                      "name": "risk_tier",
+                      "expression": "`risk_tier`"
+                    },
+                    {
+                      "name": "avg(avg_risk_score)",
+                      "expression": "AVG(`avg_risk_score`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "weekly(week_start)",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "axis": {
+                    "title": "Week Start"
+                  },
+                  "displayName": "Week Start"
+                },
+                "y": {
+                  "fieldName": "avg(avg_risk_score)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "axis": {
+                    "title": "Avg Risk Score"
+                  },
+                  "displayName": "Avg Risk Score"
+                },
+                "color": {
+                  "fieldName": "risk_tier",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Risk Tier"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Risk Score Distribution by Tier (Weekly)",
+                "description": "Grouped bars by risk tier show incident elevation in high-risk and normalization post 2025-10-21."
+              },
+              "mark": {
+                "layout": "group"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 3,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "line_encounter_diet_non_adherence_daily",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_encounter_signal_timeseries",
+                  "fields": [
+                    {
+                      "name": "daily(date)",
+                      "expression": "DATE_TRUNC(\"DAY\", `date`)"
+                    },
+                    {
+                      "name": "region",
+                      "expression": "`region`"
+                    },
+                    {
+                      "name": "avg(pct_notes_with_diet_non_adherence)",
+                      "expression": "AVG(`pct_notes_with_diet_non_adherence`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "daily(date)",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "axis": {
+                    "title": "Date"
+                  },
+                  "displayName": "Date"
+                },
+                "y": {
+                  "fieldName": "avg(pct_notes_with_diet_non_adherence)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  },
+                  "axis": {
+                    "title": "Diet Non-Adherence (%)"
+                  },
+                  "displayName": "Diet Non-Adherence (%)"
+                },
+                "color": {
+                  "fieldName": "region",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Region"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Encounter Signals - Diet Non-Adherence (Daily)",
+                "description": "Summarization uptick to ~27\u201331% during rollout window."
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 12,
+            "width": 3,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_care_actions_mix_weekly",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_care_actions_weekly",
+                  "fields": [
+                    {
+                      "name": "weekly(week_start)",
+                      "expression": "DATE_TRUNC(\"WEEK\", `week_start`)"
+                    },
+                    {
+                      "name": "action_type",
+                      "expression": "`action_type`"
+                    },
+                    {
+                      "name": "sum(actions_executed)",
+                      "expression": "SUM(`actions_executed`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "weekly(week_start)",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "axis": {
+                    "title": "Week Start"
+                  },
+                  "displayName": "Week Start"
+                },
+                "y": {
+                  "fieldName": "sum(actions_executed)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "axis": {
+                    "title": "Actions Executed"
+                  },
+                  "displayName": "Actions Executed"
+                },
+                "color": {
+                  "fieldName": "action_type",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Action Type"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Care Actions Mix by Region (Weekly)",
+                "description": "Stacked action types show pivot toward nurse outreach and medication review.",
+                "showDescription": true
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 17,
+            "width": 3,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "bar_cumulative_cost_exposure_by_region",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_cumulative_care_cost",
+                  "fields": [
+                    {
+                      "name": "daily(date)",
+                      "expression": "DATE_TRUNC(\"DAY\", `date`)"
+                    },
+                    {
+                      "name": "region",
+                      "expression": "`region`"
+                    },
+                    {
+                      "name": "sum(running_total_cost_usd)",
+                      "expression": "SUM(`running_total_cost_usd`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "daily(date)",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "axis": {
+                    "title": "Date"
+                  },
+                  "displayName": "Date"
+                },
+                "y": {
+                  "fieldName": "sum(running_total_cost_usd)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  },
+                  "axis": {
+                    "title": "Cumulative Cost Exposure ($)"
+                  },
+                  "displayName": "Cumulative Cost Exposure ($)"
+                },
+                "color": {
+                  "fieldName": "region",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Region"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Cumulative Cost Exposure by Region",
+                "description": "Stacked regional exposure rises during incident and flattens post 2025-10-21."
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 17,
+            "width": 3,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "table_device_change_log",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_device_change_log",
+                  "fields": [
+                    {
+                      "name": "change_date",
+                      "expression": "`change_date`"
+                    },
+                    {
+                      "name": "date",
+                      "expression": "`date`"
+                    },
+                    {
+                      "name": "vendor",
+                      "expression": "`vendor`"
+                    },
+                    {
+                      "name": "device_type",
+                      "expression": "`device_type`"
+                    },
+                    {
+                      "name": "version",
+                      "expression": "`version`"
+                    },
+                    {
+                      "name": "regions_scope",
+                      "expression": "`regions_scope`"
+                    },
+                    {
+                      "name": "change_type",
+                      "expression": "`change_type`"
+                    },
+                    {
+                      "name": "error_codes",
+                      "expression": "`error_codes`"
+                    },
+                    {
+                      "name": "notes",
+                      "expression": "`notes`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "change_date",
+                    "displayName": "Change Timestamp",
+                    "type": "timestamp",
+                    "displayAs": "datetime",
+                    "order": 1
+                  },
+                  {
+                    "fieldName": "date",
+                    "displayName": "Date",
+                    "type": "date",
+                    "displayAs": "date",
+                    "order": 2
+                  },
+                  {
+                    "fieldName": "vendor",
+                    "displayName": "Vendor",
+                    "type": "string",
+                    "displayAs": "string",
+                    "order": 3
+                  },
+                  {
+                    "fieldName": "device_type",
+                    "displayName": "Device Type",
+                    "type": "string",
+                    "displayAs": "string",
+                    "order": 4
+                  },
+                  {
+                    "fieldName": "version",
+                    "displayName": "Version",
+                    "type": "string",
+                    "displayAs": "string",
+                    "order": 5
+                  },
+                  {
+                    "fieldName": "regions_scope",
+                    "displayName": "Regions Scope",
+                    "type": "string",
+                    "displayAs": "string",
+                    "order": 6
+                  },
+                  {
+                    "fieldName": "change_type",
+                    "displayName": "Change Type",
+                    "type": "string",
+                    "displayAs": "string",
+                    "order": 7
+                  },
+                  {
+                    "fieldName": "error_codes",
+                    "displayName": "Error Codes",
+                    "type": "string",
+                    "displayAs": "string",
+                    "order": 8
+                  },
+                  {
+                    "fieldName": "notes",
+                    "displayName": "Notes",
+                    "type": "string",
+                    "displayAs": "string",
+                    "order": 9
+                  }
+                ]
+              },
+              "itemsPerPage": 12,
+              "frame": {
+                "showTitle": true,
+                "title": "Device Change Log (Root-Cause View)",
+                "description": "Rollout (2025-10-02), config push (2025-10-12), and hotfix (2025-10-21) aligned with ingestion anomalies.",
+                "showDescription": true
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 22,
+            "width": 6,
+            "height": 7
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS"
+    },
+    {
+      "name": "global_filters",
+      "displayName": "Global Filters",
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layout": [
+        {
+          "widget": {
+            "name": "filter_date_range",
+            "queries": [
+              {
+                "name": "ds_device_ingestion_timeseries_date",
+                "query": {
+                  "datasetName": "ds_device_ingestion_timeseries",
+                  "fields": [
+                    {
+                      "name": "date",
+                      "expression": "`date`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "ds_bp_quality_timeseries_date",
+                "query": {
+                  "datasetName": "ds_bp_quality_timeseries",
+                  "fields": [
+                    {
+                      "name": "date",
+                      "expression": "`date`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "ds_patient_risk_weekly_week_start",
+                "query": {
+                  "datasetName": "ds_patient_risk_weekly",
+                  "fields": [
+                    {
+                      "name": "week_start",
+                      "expression": "`week_start`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "ds_encounter_signal_timeseries_date",
+                "query": {
+                  "datasetName": "ds_encounter_signal_timeseries",
+                  "fields": [
+                    {
+                      "name": "date",
+                      "expression": "`date`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "ds_care_actions_weekly_week_start",
+                "query": {
+                  "datasetName": "ds_care_actions_weekly",
+                  "fields": [
+                    {
+                      "name": "week_start",
+                      "expression": "`week_start`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "ds_cumulative_care_cost_date",
+                "query": {
+                  "datasetName": "ds_cumulative_care_cost",
+                  "fields": [
+                    {
+                      "name": "date",
+                      "expression": "`date`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "ds_device_change_log_date",
+                "query": {
+                  "datasetName": "ds_device_change_log",
+                  "fields": [
+                    {
+                      "name": "date",
+                      "expression": "`date`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-date-range-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "date",
+                    "displayName": "Date",
+                    "queryName": "ds_device_ingestion_timeseries_date"
+                  },
+                  {
+                    "fieldName": "date",
+                    "displayName": "Date",
+                    "queryName": "ds_bp_quality_timeseries_date"
+                  },
+                  {
+                    "fieldName": "week_start",
+                    "displayName": "Week Start",
+                    "queryName": "ds_patient_risk_weekly_week_start"
+                  },
+                  {
+                    "fieldName": "date",
+                    "displayName": "Date",
+                    "queryName": "ds_encounter_signal_timeseries_date"
+                  },
+                  {
+                    "fieldName": "week_start",
+                    "displayName": "Week Start",
+                    "queryName": "ds_care_actions_weekly_week_start"
+                  },
+                  {
+                    "fieldName": "date",
+                    "displayName": "Date",
+                    "queryName": "ds_cumulative_care_cost_date"
+                  },
+                  {
+                    "fieldName": "date",
+                    "displayName": "Date",
+                    "queryName": "ds_device_change_log_date"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Filter by Date Range"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_region",
+            "queries": [
+              {
+                "name": "ds_device_ingestion_timeseries_region",
+                "query": {
+                  "datasetName": "ds_device_ingestion_timeseries",
+                  "fields": [
+                    {
+                      "name": "region",
+                      "expression": "`region`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "ds_bp_quality_timeseries_region",
+                "query": {
+                  "datasetName": "ds_bp_quality_timeseries",
+                  "fields": [
+                    {
+                      "name": "region",
+                      "expression": "`region`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "ds_patient_risk_weekly_region",
+                "query": {
+                  "datasetName": "ds_patient_risk_weekly",
+                  "fields": [
+                    {
+                      "name": "region",
+                      "expression": "`region`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "ds_care_actions_weekly_region",
+                "query": {
+                  "datasetName": "ds_care_actions_weekly",
+                  "fields": [
+                    {
+                      "name": "region",
+                      "expression": "`region`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "ds_cumulative_care_cost_region",
+                "query": {
+                  "datasetName": "ds_cumulative_care_cost",
+                  "fields": [
+                    {
+                      "name": "region",
+                      "expression": "`region`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "region",
+                    "displayName": "Region",
+                    "queryName": "ds_device_ingestion_timeseries_region"
+                  },
+                  {
+                    "fieldName": "region",
+                    "displayName": "Region",
+                    "queryName": "ds_bp_quality_timeseries_region"
+                  },
+                  {
+                    "fieldName": "region",
+                    "displayName": "Region",
+                    "queryName": "ds_patient_risk_weekly_region"
+                  },
+                  {
+                    "fieldName": "region",
+                    "displayName": "Region",
+                    "queryName": "ds_care_actions_weekly_region"
+                  },
+                  {
+                    "fieldName": "region",
+                    "displayName": "Region",
+                    "queryName": "ds_cumulative_care_cost_region"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Filter by Region"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_condition",
+            "queries": [
+              {
+                "name": "ds_patient_risk_weekly_condition",
+                "query": {
+                  "datasetName": "ds_patient_risk_weekly",
+                  "fields": [
+                    {
+                      "name": "condition",
+                      "expression": "`condition`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "ds_care_actions_weekly_condition",
+                "query": {
+                  "datasetName": "ds_care_actions_weekly",
+                  "fields": [
+                    {
+                      "name": "condition",
+                      "expression": "`condition`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "ds_cumulative_care_cost_condition",
+                "query": {
+                  "datasetName": "ds_cumulative_care_cost",
+                  "fields": [
+                    {
+                      "name": "condition",
+                      "expression": "`condition`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "condition",
+                    "displayName": "Condition",
+                    "queryName": "ds_patient_risk_weekly_condition",
+                    "dataType": "STRING"
+                  },
+                  {
+                    "fieldName": "condition",
+                    "displayName": "Condition (Actions)",
+                    "queryName": "ds_care_actions_weekly_condition",
+                    "dataType": "STRING"
+                  },
+                  {
+                    "fieldName": "condition",
+                    "displayName": "Condition (Cost)",
+                    "queryName": "ds_cumulative_care_cost_condition",
+                    "dataType": "STRING"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Filter by Condition"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_risk_tier",
+            "queries": [
+              {
+                "name": "ds_patient_risk_weekly_risk_tier",
+                "query": {
+                  "datasetName": "ds_patient_risk_weekly",
+                  "fields": [
+                    {
+                      "name": "risk_tier",
+                      "expression": "`risk_tier`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "risk_tier",
+                    "displayName": "Risk Tier",
+                    "queryName": "ds_patient_risk_weekly_risk_tier"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Filter by Risk Tier"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_device_type",
+            "queries": [
+              {
+                "name": "ds_device_ingestion_timeseries_device_type",
+                "query": {
+                  "datasetName": "ds_device_ingestion_timeseries",
+                  "fields": [
+                    {
+                      "name": "device_type",
+                      "expression": "`device_type`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "ds_device_change_log_device_type",
+                "query": {
+                  "datasetName": "ds_device_change_log",
+                  "fields": [
+                    {
+                      "name": "device_type",
+                      "expression": "`device_type`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "device_type",
+                    "displayName": "Device Type",
+                    "queryName": "ds_device_ingestion_timeseries_device_type",
+                    "dataType": "STRING"
+                  },
+                  {
+                    "fieldName": "device_type",
+                    "displayName": "Device Type (Change Log)",
+                    "queryName": "ds_device_change_log_device_type",
+                    "dataType": "STRING"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Filter by Device Type"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_action_type",
+            "queries": [
+              {
+                "name": "ds_care_actions_weekly_action_type",
+                "query": {
+                  "datasetName": "ds_care_actions_weekly",
+                  "fields": [
+                    {
+                      "name": "action_type",
+                      "expression": "`action_type`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "action_type",
+                    "displayName": "Action Type",
+                    "queryName": "ds_care_actions_weekly_action_type",
+                    "dataType": "STRING"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Filter by Action Type"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 2,
+            "height": 2
+          }
+        }
+      ]
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    }
+  }
+}

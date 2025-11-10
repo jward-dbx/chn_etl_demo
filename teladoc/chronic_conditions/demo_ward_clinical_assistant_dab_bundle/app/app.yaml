@@ -1,0 +1,5 @@
+name: clinical_assistant_app
+description: Clinical Assistant for Chronic Care Management
+type: streamlit
+entrypoint: clinical_assistant_app.py
+
