@@ -1,0 +1,79 @@
+# Ignore everything by default
+/*
+
+# But include the project directory
+!/teladoc/
+!/teladoc/**
+!/teladoc/chronic_conditions/
+!/teladoc/chronic_conditions/**
+!/teladoc/chronic_conditions/demo_ward_clinical_assistant_dab_bundle/
+!/teladoc/chronic_conditions/demo_ward_clinical_assistant_dab_bundle/**
+
+# Exclude common system/user files
+.bun/
+.bash_history
+.bashrc
+.CFUserTextEncoding
+.DS_Store
+.Trash/
+.cursor/
+.codex/
+.config/
+.cups/
+.databricks/
+.databrickscfg
+.databrickscfg.bak
+.dbclient/
+.docker/
+.gitconfig
+.lesshst
+.local/
+.localized
+.npm/
+.profile
+.redhat/
+.streamlit/
+.swiftpm/
+.terraform.d/
+.vscode/
+.zcompdump
+.zprofile
+.zsh_history
+.zsh_sessions/
+.zshrc
+
+# Exclude common directories
+Applications/
+Desktop/
+Documents/
+Downloads/
+Library/
+Movies/
+Music/
+Pictures/
+Public/
+Google Drive/
+
+# Exclude other project directories (add more as needed)
+!ccf/
+!ccf_agent/
+!claude_app/
+!config.json.txt
+!databricks-ml-oversight/
+!dlt-meta/
+!fhir_demo/
+!information_schema_crawl.docx
+!information_schema_owners.rtf
+!local_repo/
+!misc/
+!mlops/
+!prod_simple.sql.rtf
+!terraform-project/
+!tufts/
+
+# Exclude temporary/log files
+*.log
+*.tmp
+*.bak
+GlobalProtectLogs_*/
+
