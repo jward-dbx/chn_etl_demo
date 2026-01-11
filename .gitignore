@@ -9,6 +9,11 @@
 !/teladoc/chronic_conditions/demo_ward_clinical_assistant_dab_bundle/
 !/teladoc/chronic_conditions/demo_ward_clinical_assistant_dab_bundle/**
 
+# Include CHN project directory
+!/chn/
+!/chn/**
+!/README.md
+
 # Exclude common system/user files
 .bun/
 .bash_history
