@@ -1,0 +1,13 @@
+{
+  "chn": {
+    "alias": "chn",
+    "workspace_url": "https://fe-sandbox-chn-etl-demo.cloud.databricks.com",
+    "host": "fe-sandbox-chn-etl-demo.cloud.databricks.com",
+    "token": "YOUR_TOKEN_HERE",
+    "mcp_servers": {
+      "dbsql": "chn-dbsql",
+      "system_ai": "chn-system-ai"
+    },
+    "note": "CHN ETL Demo workspace - Primary workspace for CHN data pipeline development"
+  }
+}

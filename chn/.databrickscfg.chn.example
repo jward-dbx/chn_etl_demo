@@ -1,0 +1,5 @@
+# Databricks CLI configuration for CHN workspace
+# To use: databricks configure --profile chn
+
+host = https://fe-sandbox-chn-etl-demo.cloud.databricks.com
+token = YOUR_TOKEN_HERE

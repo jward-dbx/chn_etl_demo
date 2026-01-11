@@ -1,0 +1,2 @@
+# This file keeps the config/dev directory in git
+# Actual .env file is git-ignored for security
