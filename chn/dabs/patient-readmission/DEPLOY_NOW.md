@@ -1,168 +1,202 @@
-# Patient Readmission DAB - Manual Deployment Instructions
+# ✅ Deployment Complete!
 
-## ✅ What I've Already Done
+## 🎉 Successfully Deployed to CHN Workspace
 
-I've successfully created the Unity Catalog structures via API:
+The Patient Readmission pipeline has been **deployed and is running**!
 
+### Deployment Details
+
+- **Workspace**: `https://fe-sandbox-chn-etl-demo.cloud.databricks.com`
+- **Job ID**: `783202757934005`
+- **Run ID**: `497831407491927`
+- **Status**: Running (Expected completion: 10-16 minutes)
+
+### Monitor Progress
+
+🔗 **Watch the pipeline execute:**  
+https://fe-sandbox-chn-etl-demo.cloud.databricks.com/#job/783202757934005/run/497831407491927
+
+---
+
+## 📦 What Was Deployed
+
+### Unity Catalog Resources
 ```
 ✓ Schema: chn_etl_demo_catalog.patient_readmission_dev
 ✓ Volume: chn_etl_demo_catalog.patient_readmission_dev.raw_data
 ```
 
-## 🚀 Complete the Deployment (2 Options)
-
-### Option 1: Install Databricks CLI and Deploy (Recommended)
-
-This is the cleanest approach using the Databricks Asset Bundle:
-
-```bash
-# 1. Install Databricks CLI
-pip install databricks-cli
-
-# 2. Configure with your workspace
-databricks configure --host https://fe-sandbox-chn-etl-demo.cloud.databricks.com
-# When prompted, enter your Databricks token
-
-# 3. Navigate to the DAB directory
-cd /Users/justin.ward/chn/dabs/patient-readmission
-
-# 4. Deploy the bundle
-databricks bundle deploy -t dev --force-lock
-
-# 5. Run the pipeline
-databricks bundle run patient_readmission_pipeline -t dev
-```
-
-**Timeline:** ~15-20 minutes total (10-16 min for pipeline execution)
-
-### Option 2: Manual Deployment via Databricks UI
-
-If you prefer not to install the CLI, you can deploy manually:
-
-#### Step 1: Import Source Files to Workspace
-
-1. Navigate to https://fe-sandbox-chn-etl-demo.cloud.databricks.com
-2. Go to **Workspace** → Create folder `/Users/justin.ward@databricks.com/chn_etl_demo/patient_readmission`
-3. Upload these files from `/Users/justin.ward/chn/dabs/patient-readmission/src/`:
-   - `generate_data.py`
-   - `transformations.sql`
-   - `deploy_resources.py`
-   - `agent_bricks_service.py`
-   - `utils.py`
-   - `bricks_conf.json`
-   - `dashboard_lakeview_er_staffing_quality.lvdash.json`
-
-#### Step 2: Create and Run Workflow
-
-1. Go to **Workflows** → **Create Job**
-2. Name: `[dev] Patient Readmission Pipeline`
+### Workflow Job: `[dev] Patient Readmission Pipeline - API`
 
 **Task 1 - Generate Data:**
-- Type: Python script
-- Source file: `/Users/justin.ward@databricks.com/chn_etl_demo/patient_readmission/generate_data.py`
-- Cluster:
-  - Spark Version: 14.3.x LTS
-  - Node type: i3.xlarge (or similar)
-  - Workers: 2
-- Libraries: `faker>=19.0.0`, `pandas>=2.0.0`, `numpy>=1.24.0`
-- Environment variables:
-  ```
-  CATALOG=chn_etl_demo_catalog
-  SCHEMA=patient_readmission_dev
-  VOLUME=raw_data
-  ```
+- Generates ~312K synthetic ER visit records for September 2025
+- Creates 5 raw tables (EMR, HR, patient flow, satisfaction, readmission risk)
+- Uses: `faker`, `pandas`, `numpy`
 
 **Task 2 - SQL Transformations:**
-- Type: SQL
-- Warehouse: Serverless Starter Warehouse
-- Source file: `/Users/justin.ward@databricks.com/chn_etl_demo/patient_readmission/transformations.sql`
-- **Important:** Before running, replace all `${catalog}` with `chn_etl_demo_catalog` and `${schema}` with `patient_readmission_dev` in the SQL file
+- Executes medallion architecture transformations
+- Creates 5 silver tables (cleaned, standardized)
+- Creates 6 gold tables (aggregated KPIs)
+- Uses: Serverless SQL Warehouse
 
 **Task 3 - Deploy Resources:**
-- Type: Python script
-- Source file: `/Users/justin.ward@databricks.com/chn_etl_demo/patient_readmission/deploy_resources.py`
-- Cluster: Same as Task 1
-- Libraries: `databricks-sdk>=0.18.0`
-- Environment variables: Same as Task 1
+- Deploys Genie AI Space for interactive analytics
+- Creates Lakeview Dashboard for executive metrics
+- Uses: `databricks-sdk`
 
-3. Set dependencies: Task 1 → Task 2 → Task 3
-4. Click **Run now**
-
-## 📊 What Gets Created
-
-Once deployed, you'll have:
-
-**Data Assets:**
-- 5 Bronze tables (raw data) - ~312K ER visit records
-- 5 Silver tables (cleaned)
-- 6 Gold tables (aggregated KPIs)
-
-**AI Resources:**
-- Genie AI Space: "ER Staffing, Access, Quality & Financial Risk"
-- Lakeview Dashboard with executive metrics
-
-**Tables Created:**
+### Source Files (Uploaded to Workspace)
 ```
-chn_etl_demo_catalog.patient_readmission_dev.raw_emr_er_visits
-chn_etl_demo_catalog.patient_readmission_dev.raw_hr_shifts_and_sickleave
-chn_etl_demo_catalog.patient_readmission_dev.raw_patient_flow_metrics
-chn_etl_demo_catalog.patient_readmission_dev.raw_patient_satisfaction_surveys
-chn_etl_demo_catalog.patient_readmission_dev.raw_readmission_risk_feed
-chn_etl_demo_catalog.patient_readmission_dev.silver_emr_er_visits
-chn_etl_demo_catalog.patient_readmission_dev.silver_hr_shifts_and_sickleave
-chn_etl_demo_catalog.patient_readmission_dev.silver_patient_flow_metrics
-chn_etl_demo_catalog.patient_readmission_dev.silver_patient_satisfaction_surveys
-chn_etl_demo_catalog.patient_readmission_dev.silver_readmission_risk_feed
-chn_etl_demo_catalog.patient_readmission_dev.gold_er_operational_hourly
-chn_etl_demo_catalog.patient_readmission_dev.gold_er_quality_daily
-chn_etl_demo_catalog.patient_readmission_dev.gold_er_staffing_daily
-chn_etl_demo_catalog.patient_readmission_dev.gold_er_finance_daily
-chn_etl_demo_catalog.patient_readmission_dev.gold_er_readmission_risk_daily
-chn_etl_demo_catalog.patient_readmission_dev.gold_global_filters_bridge
+/Users/justin.ward@databricks.com/chn_etl_demo/patient_readmission/
+├── generate_data.py
+├── transformations.sql
+├── deploy_resources.py
+├── agent_bricks_service.py
+├── utils.py
+└── bricks_conf.json
 ```
+
+---
+
+## 🔄 How to Redeploy or Update
+
+### Method 1: REST API Deployment (No CLI Required)
+
+```bash
+# Set environment variables
+export DATABRICKS_TOKEN="your-token-here"
+export DATABRICKS_HOST="https://fe-sandbox-chn-etl-demo.cloud.databricks.com"
+export CATALOG="chn_etl_demo_catalog"
+export SCHEMA="patient_readmission_dev"
+
+# Run deployment script
+cd /Users/justin.ward/chn/dabs/patient-readmission
+python3 deploy_api.py
+```
+
+**What it does:**
+1. Creates workspace folder
+2. Uploads all source files
+3. Creates multi-task workflow job
+4. Triggers job run
+
+### Method 2: Databricks CLI (If Installed)
+
+```bash
+cd /Users/justin.ward/chn/dabs/patient-readmission
+
+# Validate bundle
+databricks bundle validate -t dev
+
+# Deploy
+databricks bundle deploy -t dev
+
+# Run
+databricks bundle run -t dev patient_readmission_pipeline
+```
+
+---
+
+## 📊 Expected Results
+
+Once the pipeline completes, you'll have:
+
+### Data Tables (26 total)
+
+**Bronze (5 raw tables):**
+- `raw_emr_er_visits` - ~312K ER visits
+- `raw_hr_shifts_and_sickleave` - Staffing data
+- `raw_patient_flow_metrics` - Telemetry
+- `raw_patient_satisfaction_surveys` - Surveys
+- `raw_readmission_risk_feed` - ML predictions
+
+**Silver (5 cleaned tables):**
+- `silver_emr_er_visits`
+- `silver_hr_shifts_and_sickleave`
+- `silver_patient_flow_metrics`
+- `silver_patient_satisfaction_surveys`
+- `silver_readmission_risk_feed`
+
+**Gold (6 aggregated tables):**
+- `gold_er_operational_hourly` - Arrivals, throughput, staffing
+- `gold_er_quality_daily` - LWBS rate, wait times, satisfaction
+- `gold_er_finance_daily` - Overtime, costs, reimbursement risk
+- `gold_er_staffing_daily` - Coverage gaps, sick leave
+- `gold_er_readmission_risk_daily` - Risk scores, realized readmissions
+- `gold_global_filters_bridge` - Cross-cutting dimensions
+
+### AI Resources
+
+- **Genie Space**: "ER Staffing, Access, Quality & Financial Risk"
+- **Lakeview Dashboard**: `[dev] patient_readmission - Lakeview ER Staffing, Access, Quality, and Financial Risk`
+
+---
 
 ## ✅ Verify Deployment
 
-After the workflow completes, run this query:
+After the workflow completes (check the link above), run these queries:
 
 ```sql
--- Check schema and tables
+-- List all tables
 SHOW TABLES IN chn_etl_demo_catalog.patient_readmission_dev;
 
--- View sample data
+-- Check record counts
+SELECT 
+  'raw_emr_er_visits' as table_name,
+  COUNT(*) as record_count
+FROM chn_etl_demo_catalog.patient_readmission_dev.raw_emr_er_visits
+UNION ALL
+SELECT 
+  'gold_er_quality_daily',
+  COUNT(*)
+FROM chn_etl_demo_catalog.patient_readmission_dev.gold_er_quality_daily;
+
+-- View quality metrics
 SELECT 
   site,
   date,
   is_weekend,
   visits_total,
-  lwbs_rate,
+  ROUND(lwbs_rate * 100, 2) as lwbs_rate_pct,
   median_triage_wait_minutes,
-  median_door_to_provider_minutes
+  median_door_to_provider_minutes,
+  satisfaction_overall_avg
 FROM chn_etl_demo_catalog.patient_readmission_dev.gold_er_quality_daily
 WHERE date BETWEEN '2025-09-01' AND '2025-09-30'
 ORDER BY lwbs_rate DESC
 LIMIT 10;
 ```
 
-## 💡 Recommendation
+---
 
-I **strongly recommend Option 1** (Databricks CLI) because:
-- ✅ One command deployment
-- ✅ Automatic variable substitution
-- ✅ Proper dependency management
-- ✅ Easier to redeploy/update
-- ✅ Version controlled
+## 🎯 Key Insights (Once Data is Generated)
 
-The CLI install takes ~2 minutes and makes future deployments trivial.
+The demo shows a **weekend surge scenario** at SummitCare Health Network:
 
-## 🆘 Need Help?
-
-If you encounter issues:
-1. Check the job run logs in Databricks UI
-2. Verify environment variables are set correctly
-3. Ensure the warehouse is available
-4. See `DEPLOYMENT.md` for troubleshooting
+- **Problem**: Understaffing on weekends → longer wait times → higher LWBS rate → quality issues
+- **Impact**: Increased readmission risk, financial penalties, lower satisfaction
+- **Solution**: Data-driven staffing optimization using gold layer metrics
 
 ---
 
-**All code and configurations are ready in:** `/Users/justin.ward/chn/dabs/patient-readmission/`
+## 📚 Documentation
+
+- **Architecture**: See `README.md` for detailed architecture
+- **Deployment Guide**: See `DEPLOYMENT.md` for advanced scenarios
+- **Implementation Details**: See `IMPLEMENTATION_SUMMARY.md`
+
+---
+
+## 🆘 Troubleshooting
+
+If the job fails, check:
+
+1. **Permissions**: Ensure you have `USE CATALOG` and `CREATE SCHEMA` on `chn_etl_demo_catalog`
+2. **Warehouse**: Verify `Serverless Starter Warehouse` is available
+3. **Libraries**: Check that PyPI packages can be installed (faker, databricks-sdk)
+4. **Logs**: View task logs in the Databricks UI
+
+---
+
+**Deployed via**: `deploy_api.py` (REST API)  
+**Method**: Serverless compute for FE workspace compatibility  
+**Environment**: Development (`patient_readmission_dev`)
