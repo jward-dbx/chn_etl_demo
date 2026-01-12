@@ -26,6 +26,18 @@ sqlserver_catalog_name_b    = "conn_asqldb_awb_catalog_prod"
 sqlserver_catalog_comment_b = "Foreign catalog mirroring Adventure Works SQL Server database B (production)"
 sqlserver_database_name_b   = "adventure-works-b"
 
+# Storage Credential Configuration
+storage_credential_name    = "sc-chn-prod-storage"
+storage_credential_comment = "Storage credential for CHN production Unity Catalog access"
+# Note: Update with production access connector ID
+azure_access_connector_id  = "/subscriptions/SUBSCRIPTION_ID/resourceGroups/RESOURCE_GROUP/providers/Microsoft.Databricks/accessConnectors/ACCESS_CONNECTOR_NAME"
+
+# External Location Configuration
+external_location_name    = "el-chn-prod-unity-catalog"
+external_location_comment = "External location for CHN production Unity Catalog data"
+# Note: Update with production storage account and container
+external_location_url     = "abfss://CONTAINER@STORAGE_ACCOUNT.dfs.core.windows.net/"
+
 # Additional connection options
 sqlserver_additional_options = {
   applicationIntent      = "ReadOnly"

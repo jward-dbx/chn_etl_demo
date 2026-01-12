@@ -124,3 +124,43 @@ variable "sqlserver_database_name_b" {
   description = "SQL Server database B name to federate"
   type        = string
 }
+
+# ============================================================================
+# STORAGE CREDENTIALS
+# ============================================================================
+
+variable "storage_credential_name" {
+  description = "Name of the storage credential"
+  type        = string
+}
+
+variable "storage_credential_comment" {
+  description = "Description of the storage credential"
+  type        = string
+  default     = "Storage credential for CHN demo"
+}
+
+variable "azure_access_connector_id" {
+  description = "Azure Databricks Access Connector resource ID"
+  type        = string
+}
+
+# ============================================================================
+# EXTERNAL LOCATIONS
+# ============================================================================
+
+variable "external_location_name" {
+  description = "Name of the external location"
+  type        = string
+}
+
+variable "external_location_comment" {
+  description = "Description of the external location"
+  type        = string
+  default     = "External location for CHN demo Unity Catalog data"
+}
+
+variable "external_location_url" {
+  description = "ABFSS URL for the external location (e.g., abfss://container@storage.dfs.core.windows.net/path)"
+  type        = string
+}
