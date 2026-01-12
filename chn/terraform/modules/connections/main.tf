@@ -36,7 +36,6 @@ resource "databricks_catalog" "this" {
   name            = var.catalog_name
   comment         = var.catalog_comment
   connection_name = databricks_connection.this.name
-  catalog_type    = "FOREIGN_CATALOG"
 
   options = {
     database = var.database_name
