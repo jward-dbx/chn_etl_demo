@@ -38,6 +38,13 @@ external_location_comment = "External location for CHN production Unity Catalog 
 # Note: Update with production storage account and container
 external_location_url     = "abfss://CONTAINER@STORAGE_ACCOUNT.dfs.core.windows.net/"
 
+# Schema Configuration
+schema_catalog_name         = "dbx_chn_ward_demo_prod"
+schema_ct_enabled_name      = "sqlserver_ct_enabled"
+schema_ct_enabled_comment   = "SQL Server data schema with change tracking enabled (production)"
+schema_ct_disabled_name     = "sqlserver_ct_disabled"
+schema_ct_disabled_comment  = "SQL Server data schema with change tracking disabled (production)"
+
 # Additional connection options
 sqlserver_additional_options = {
   applicationIntent      = "ReadOnly"

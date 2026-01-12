@@ -164,3 +164,34 @@ variable "external_location_url" {
   description = "ABFSS URL for the external location (e.g., abfss://container@storage.dfs.core.windows.net/path)"
   type        = string
 }
+
+# ============================================================================
+# SCHEMAS
+# ============================================================================
+
+variable "schema_catalog_name" {
+  description = "Catalog name where schemas will be created"
+  type        = string
+}
+
+variable "schema_ct_enabled_name" {
+  description = "Name of the schema with change tracking enabled"
+  type        = string
+}
+
+variable "schema_ct_enabled_comment" {
+  description = "Description of the change tracking enabled schema"
+  type        = string
+  default     = "SQL Server schema with change tracking enabled"
+}
+
+variable "schema_ct_disabled_name" {
+  description = "Name of the schema with change tracking disabled"
+  type        = string
+}
+
+variable "schema_ct_disabled_comment" {
+  description = "Description of the change tracking disabled schema"
+  type        = string
+  default     = "SQL Server schema with change tracking disabled"
+}

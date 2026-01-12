@@ -107,6 +107,30 @@ output "external_location_url" {
 }
 
 # ============================================================================
+# SCHEMA OUTPUTS
+# ============================================================================
+
+output "schema_ct_enabled_id" {
+  description = "ID of the change tracking enabled schema"
+  value       = databricks_schema.sqlserver_ct_enabled.id
+}
+
+output "schema_ct_enabled_name" {
+  description = "Full name of the change tracking enabled schema"
+  value       = "${databricks_schema.sqlserver_ct_enabled.catalog_name}.${databricks_schema.sqlserver_ct_enabled.name}"
+}
+
+output "schema_ct_disabled_id" {
+  description = "ID of the change tracking disabled schema"
+  value       = databricks_schema.sqlserver_ct_disabled.id
+}
+
+output "schema_ct_disabled_name" {
+  description = "Full name of the change tracking disabled schema"
+  value       = "${databricks_schema.sqlserver_ct_disabled.catalog_name}.${databricks_schema.sqlserver_ct_disabled.name}"
+}
+
+# ============================================================================
 # SUMMARY OUTPUT
 # ============================================================================
 
@@ -127,5 +151,9 @@ output "deployment_summary" {
     storage_credential = databricks_storage_credential.chn_demo.name
     external_location  = databricks_external_location.chn_demo_unity_catalog.name
     external_location_url = databricks_external_location.chn_demo_unity_catalog.url
+    schemas            = [
+      "${databricks_schema.sqlserver_ct_enabled.catalog_name}.${databricks_schema.sqlserver_ct_enabled.name}",
+      "${databricks_schema.sqlserver_ct_disabled.catalog_name}.${databricks_schema.sqlserver_ct_disabled.name}"
+    ]
   }
 }
