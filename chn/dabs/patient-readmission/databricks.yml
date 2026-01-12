@@ -68,7 +68,7 @@ targets:
     default: true
     mode: development
     workspace:
-      host: https://fe-sandbox-chn-etl-demo.cloud.databricks.com
+      host: https://adb-7405607609261208.8.azuredatabricks.net
       root_path: ${var.workspace_path}/.bundle/${bundle.name}/dev
     variables:
       environment: dev
@@ -79,7 +79,7 @@ targets:
   prod:
     mode: production
     workspace:
-      host: https://fe-sandbox-chn-etl-demo.cloud.databricks.com
+      host: https://adb-7405607609261208.8.azuredatabricks.net
       root_path: ${var.workspace_path}/.bundle/${bundle.name}/prod
     variables:
       environment: prod

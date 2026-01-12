@@ -6,7 +6,7 @@ The Patient Readmission pipeline has been **deployed and is running**!
 
 ### Deployment Details
 
-- **Workspace**: `https://fe-sandbox-chn-etl-demo.cloud.databricks.com`
+- **Workspace**: `https://adb-7405607609261208.8.azuredatabricks.net`
 - **Job ID**: `783202757934005`
 - **Run ID**: `497831407491927`
 - **Status**: Running (Expected completion: 10-16 minutes)
@@ -14,7 +14,7 @@ The Patient Readmission pipeline has been **deployed and is running**!
 ### Monitor Progress
 
 🔗 **Watch the pipeline execute:**  
-https://fe-sandbox-chn-etl-demo.cloud.databricks.com/#job/783202757934005/run/497831407491927
+https://adb-7405607609261208.8.azuredatabricks.net/#job/783202757934005/run/497831407491927
 
 ---
 
@@ -64,7 +64,7 @@ https://fe-sandbox-chn-etl-demo.cloud.databricks.com/#job/783202757934005/run/49
 ```bash
 # Set environment variables
 export DATABRICKS_TOKEN="your-token-here"
-export DATABRICKS_HOST="https://fe-sandbox-chn-etl-demo.cloud.databricks.com"
+export DATABRICKS_HOST="https://adb-7405607609261208.8.azuredatabricks.net"
 export CATALOG="chn_etl_demo_catalog"
 export SCHEMA="patient_readmission_dev"
 

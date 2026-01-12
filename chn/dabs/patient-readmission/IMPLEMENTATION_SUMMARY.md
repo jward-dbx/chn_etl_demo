@@ -128,7 +128,7 @@ dabs/patient-readmission/
 pip install databricks-cli
 
 # Configure authentication
-databricks configure --host https://fe-sandbox-chn-etl-demo.cloud.databricks.com
+databricks configure --host https://adb-7405607609261208.8.azuredatabricks.net
 ```
 
 ### Quick Deployment

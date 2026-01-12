@@ -33,7 +33,7 @@ terraform/
 1. Install [Terraform](https://www.terraform.io/downloads) (>= 1.0)
 2. Set up Databricks authentication:
    ```bash
-   export DATABRICKS_HOST="https://fe-sandbox-chn-etl-demo.cloud.databricks.com"
+   export DATABRICKS_HOST="https://adb-7405607609261208.8.azuredatabricks.net"
    export DATABRICKS_TOKEN="your-token-here"
    ```
 

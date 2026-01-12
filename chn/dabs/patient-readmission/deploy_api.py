@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 
 # Configuration - use environment variables for secrets
-WORKSPACE_URL = os.getenv("DATABRICKS_HOST", "https://fe-sandbox-chn-etl-demo.cloud.databricks.com")
+WORKSPACE_URL = os.getenv("DATABRICKS_HOST", "https://adb-7405607609261208.8.azuredatabricks.net")
 TOKEN = os.getenv("DATABRICKS_TOKEN")
 CATALOG = os.getenv("CATALOG", "chn_etl_demo_catalog")
 SCHEMA = os.getenv("SCHEMA", "patient_readmission_dev")
