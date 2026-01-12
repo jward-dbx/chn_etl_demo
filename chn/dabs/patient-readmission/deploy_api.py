@@ -13,9 +13,9 @@ from pathlib import Path
 # Configuration - use environment variables for secrets
 WORKSPACE_URL = os.getenv("DATABRICKS_HOST", "https://adb-7405607609261208.8.azuredatabricks.net")
 TOKEN = os.getenv("DATABRICKS_TOKEN")
-CATALOG = os.getenv("CATALOG", "chn_etl_demo_catalog")
+CATALOG = os.getenv("CATALOG", "dbx_chn_ward_demo")
 SCHEMA = os.getenv("SCHEMA", "patient_readmission_dev")
-WAREHOUSE_ID = os.getenv("WAREHOUSE_ID", "6dd050d4b3fe2cca")  # Serverless Starter Warehouse
+WAREHOUSE_ID = os.getenv("WAREHOUSE_ID", "fbd528ca6ed5f79c")  # cursor warehouse (running)
 
 if not TOKEN:
     raise ValueError("DATABRICKS_TOKEN environment variable must be set")
