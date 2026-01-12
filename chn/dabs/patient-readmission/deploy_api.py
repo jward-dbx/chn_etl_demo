@@ -185,7 +185,7 @@ def main():
                     "dependencies": [
                         "faker>=19.0.0",
                         "pandas>=2.0.0",
-                        "numpy>=1.24.0",
+                        "numpy>=1.24.0,<2.0.0",
                         "databricks-sdk>=0.18.0"
                     ]
                 }
