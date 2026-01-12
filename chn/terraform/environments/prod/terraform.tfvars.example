@@ -15,11 +15,16 @@ sqlserver_user          = "admin_chn_prod"
 sqlserver_password      = "CHANGE_ME"  # Use secure secret management
 sqlserver_database_name = "adventure-works-prod"
 
-# Foreign Catalog Configuration
+# Foreign Catalog Configuration - Database A
 sqlserver_catalog_name    = "conn_asqldb_awa_catalog_prod"
-sqlserver_catalog_comment = "Foreign catalog mirroring Adventure Works SQL Server database (production)"
+sqlserver_catalog_comment = "Foreign catalog mirroring Adventure Works SQL Server database A (production)"
 catalog_isolation_mode    = "OPEN"
 catalog_owner             = "justin.ward@databricks.com"
+
+# Foreign Catalog Configuration - Database B
+sqlserver_catalog_name_b    = "conn_asqldb_awb_catalog_prod"
+sqlserver_catalog_comment_b = "Foreign catalog mirroring Adventure Works SQL Server database B (production)"
+sqlserver_database_name_b   = "adventure-works-b"
 
 # Additional connection options
 sqlserver_additional_options = {

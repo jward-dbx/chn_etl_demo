@@ -104,3 +104,23 @@ variable "catalog_owner" {
   type        = string
   default     = null
 }
+
+# ============================================================================
+# FOREIGN CATALOG - ADVENTURE WORKS B
+# ============================================================================
+
+variable "sqlserver_catalog_name_b" {
+  description = "Name of the foreign catalog for SQL Server database B"
+  type        = string
+}
+
+variable "sqlserver_catalog_comment_b" {
+  description = "Description of the foreign catalog for database B"
+  type        = string
+  default     = "Foreign catalog mirroring SQL Server database B"
+}
+
+variable "sqlserver_database_name_b" {
+  description = "SQL Server database B name to federate"
+  type        = string
+}

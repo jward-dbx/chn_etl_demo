@@ -50,6 +50,30 @@ output "sqlserver_catalog_type" {
 }
 
 # ============================================================================
+# FOREIGN CATALOG B OUTPUTS
+# ============================================================================
+
+output "sqlserver_catalog_b_id" {
+  description = "ID of the SQL Server foreign catalog B"
+  value       = databricks_catalog.sqlserver_awb.id
+}
+
+output "sqlserver_catalog_b_name" {
+  description = "Name of the SQL Server foreign catalog B"
+  value       = databricks_catalog.sqlserver_awb.name
+}
+
+output "sqlserver_catalog_b_full_name" {
+  description = "Full name of the SQL Server foreign catalog B"
+  value       = databricks_catalog.sqlserver_awb.full_name
+}
+
+output "sqlserver_catalog_b_type" {
+  description = "Type of the catalog B"
+  value       = databricks_catalog.sqlserver_awb.catalog_type
+}
+
+# ============================================================================
 # SUMMARY OUTPUT
 # ============================================================================
 
@@ -58,8 +82,14 @@ output "deployment_summary" {
   value = {
     environment    = var.environment
     connection     = databricks_connection.sqlserver_awa.name
-    catalog        = databricks_catalog.sqlserver_awa.name
-    database       = var.sqlserver_database_name
+    catalogs       = [
+      databricks_catalog.sqlserver_awa.name,
+      databricks_catalog.sqlserver_awb.name
+    ]
+    databases      = [
+      var.sqlserver_database_name,
+      var.sqlserver_database_name_b
+    ]
     connection_url = databricks_connection.sqlserver_awa.url
   }
 }
