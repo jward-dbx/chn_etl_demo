@@ -1,12 +1,35 @@
-# Production Environment - Variable Values
+# Production Environment Configuration
 # Copy this file to terraform.tfvars and update with actual values
 
-# SQL Server Connection Details
-sqlserver_host          = "chn-demo-prod.database.windows.net"
+# Environment
+environment = "prod"
+
+# SQL Server Connection Configuration
+sqlserver_connection_name = "conn_asqldb_awa_prod"
+sqlserver_connection_comment = "SQL Server federation connection to Adventure Works database (production)"
+
+# SQL Server Credentials and Endpoint
+sqlserver_host          = "chn-prod.database.windows.net"
 sqlserver_port          = "1433"
 sqlserver_user          = "admin_chn_prod"
-sqlserver_password      = "REPLACE_WITH_PROD_PASSWORD"
-sqlserver_database_name = "adventure-works-a"
+sqlserver_password      = "CHANGE_ME"  # Use secure secret management
+sqlserver_database_name = "adventure-works-prod"
 
-# Catalog Configuration
-catalog_owner = "data-engineering@databricks.com"
+# Foreign Catalog Configuration
+sqlserver_catalog_name    = "conn_asqldb_awa_catalog_prod"
+sqlserver_catalog_comment = "Foreign catalog mirroring Adventure Works SQL Server database (production)"
+catalog_isolation_mode    = "OPEN"
+catalog_owner             = "justin.ward@databricks.com"
+
+# Additional connection options
+sqlserver_additional_options = {
+  applicationIntent      = "ReadOnly"
+  trustServerCertificate = "true"
+}
+
+# Additional properties
+sqlserver_properties = {
+  team    = "data-engineering"
+  project = "chn-etl-demo"
+  tier    = "production"
+}
