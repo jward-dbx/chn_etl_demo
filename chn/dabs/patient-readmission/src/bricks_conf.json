@@ -1,0 +1,165 @@
+{
+  "genie_space": {
+    "config": {
+      "id": "01f0c1746d3d1e30b3a973bf791a08fb",
+      "space_id": "01f0c1746d3d1e30b3a973bf791a08fb",
+      "display_name": "Lakeview ER Staffing, Access, Quality, and Financial Risk - Genie AI-BI",
+      "description": "Genie space for demo_ward_patient_readmission demo with curated questions and SQL instructions",
+      "warehouse_id": "862f1d757f0424f7",
+      "created_timestamp": 1763136624162,
+      "last_updated_timestamp": 1768157128493,
+      "table_identifiers": [
+        "${catalog}.${schema}.gold_er_quality_daily",
+        "${catalog}.${schema}.gold_er_operational_hourly",
+        "${catalog}.${schema}.gold_er_staffing_daily",
+        "${catalog}.${schema}.gold_er_finance_daily",
+        "${catalog}.${schema}.gold_er_readmission_risk_daily",
+        "${catalog}.${schema}.gold_global_filters_bridge",
+        "${catalog}.${schema}.silver_emr_er_visits",
+        "${catalog}.${schema}.silver_hr_shifts_and_sickleave",
+        "${catalog}.${schema}.silver_patient_flow_metrics",
+        "${catalog}.${schema}.silver_patient_satisfaction_surveys",
+        "${catalog}.${schema}.silver_readmission_risk_feed"
+      ],
+      "user_id": 8192109868239907,
+      "run_as_type": "VIEWER",
+      "folder_node_internal_name": "tree/1367581502318242"
+    },
+    "sample_questions": [
+      {
+        "question_text": "If we focus on urban sites only, which operational KPI (arrivals, staffing coverage, waits) best explains spikes in LWBS?"
+      },
+      {
+        "question_text": "Did average readmission risk increase on surge weekends, and is it higher on days with elevated LWBS and long door-to-provider times?"
+      },
+      {
+        "question_text": "How did patient satisfaction scores change on weekends vs weekdays, and which sites had the largest drop?"
+      },
+      {
+        "question_text": "At what hours of day do arrivals and queue lengths peak on weekends, and which sites see the most severe queues?"
+      },
+      {
+        "question_text": "What is the estimated reimbursement at risk by week in September 2025, and what share occurred on weekends?"
+      },
+      {
+        "question_text": "How much overtime was logged month-to-date in September 2025 by site and region, and how did it correlate with reimbursement at risk?"
+      },
+      {
+        "question_text": "Which sites and roles had the largest sick leave rates in September 2025, and were they concentrated on weekends?"
+      },
+      {
+        "question_text": "Where did nurse coverage gaps occur (coverage_gap_flag = true), and how do they relate to LWBS and wait times?"
+      },
+      {
+        "question_text": "During the surge weekends (Sep 13\u201314 and Sep 20\u201321), how did median triage wait and door-to-provider time change vs weekdays?"
+      },
+      {
+        "question_text": "Which weekends in September 2025 had the highest LWBS rate, and which sites contributed most?"
+      }
+    ],
+    "benchmarks": [],
+    "instructions": [
+      {
+        "title": "Notes",
+        "content": "This Genie space helps executives monitor September 2025 ER weekend surges across SummitCare\u2019s six sites, and tie volume spikes to staffing misalignment, access/quality impact, and financial risk.\n\nData model and table usage:\n- Use GOLD tables for fast KPI answers:\n  \u2022 gold_er_quality_daily: LWBS rate (aka left without being seen), median triage wait (minutes), median door-to-provider (minutes), throughput, satisfaction.\n  \u2022 gold_er_finance_daily: overtime_hours_sum, cost_per_visit_avg, reimbursement_at_risk_usd, cumulative_reimbursement_at_risk_usd.\n  \u2022 gold_er_operational_hourly: arrivals per hour, throughput per hour, queue_length_median, door_to_triage_median, door_to_provider_median, effective_staffing_hours, nurse_to_patient_ratio (aka N:P ratio), occupancy_pct.\n  \u2022 gold_er_staffing_daily: scheduled vs effective hours by role, sick_leave_rate, avg_nurse_to_patient_ratio, coverage_gap_flag (true when N:P exceeds policy threshold).\n  \u2022 gold_er_readmission_risk_daily: avg_readmission_probability, high_risk_share, realized_readmissions_30d.\n  \u2022 gold_global_filters_bridge: common filters (date, site, region, unit, is_weekend, role, day_of_week).\n\nBusiness logic highlights:\n- LWBS means \u201cleft without being seen\u201d. Access metrics include LWBS, triage wait, and door-to-provider. Weekend surges in Sep-2025 raised arrivals 25\u201335% and increased waits and LWBS, especially at urban sites.\n- Nurse-to-patient ratio (N:P) is used as the coverage proxy; coverage_gap_flag = TRUE indicates effective coverage is below policy thresholds.\n- Reimbursement at risk is estimated from LWBS and access breaches and is tracked daily and cumulatively by site.\n- Overtime hours increased ~22% MTD; use joins between finance and quality daily to examine whether overtime mitigated access degradation.\n- Readmission exposure is monitored via daily averages and realized 30-day readmissions; weekend surges show modest uptick, concentrated in LWBS/long-wait cohorts.\n\nSynonyms and natural language mapping:\n- LWBS = left without being seen; LWBS rate = lwbs_rate.\n- N:P ratio = nurse-to-patient ratio = nurse_to_patient_ratio (hourly) or avg_nurse_to_patient_ratio (daily staffing).\n- Door-to-provider time = door_to_provider_median (hourly) or median_door_to_provider_minutes (daily).\n- Triage wait = door_to_triage_median (hourly) or median_triage_wait_minutes (daily).\n- Coverage gap = coverage_gap_flag.\n- Weekend = is_weekend = TRUE; Weekday = is_weekend = FALSE.\n\nData quality notes:\n- Minor telemetry delays in flow metrics (<0.1%) are smoothed in GOLD hourly.\n- Provider start/door-to-provider can be null for LWBS; medians are computed from available records.\n- Sick leave flags are derived; nurse weekend sick leave rates are elevated in Sep-2025.\n\nTips:\n- Filter to September 2025 for the event window (2025-09-01..2025-09-30).\n- Use site and region filters to compare urban vs suburban vs rural.\n- Start with quality and finance daily tables for executive KPIs, then drill into operational hourly for root-cause and specific weekend peaks.",
+        "instruction_type": "TEXT_INSTRUCTION"
+      },
+      {
+        "title": "Weekend LWBS and Wait Time Comparison by Site",
+        "content": "-- Compare LWBS (left without being seen) and waits for weekends vs weekdays in Sep-2025\nSELECT q.site,\n       q.is_weekend,\n       ROUND(AVG(q.lwbs_rate), 4) AS avg_lwbs_rate,\n       ROUND(AVG(q.median_triage_wait_minutes), 2) AS avg_triage_wait_min,\n       ROUND(AVG(q.median_door_to_provider_minutes), 2) AS avg_door_to_provider_min,\n       SUM(q.throughput_daily) AS total_throughput\nFROM ${catalog}.${schema}.gold_er_quality_daily q\nWHERE q.date BETWEEN DATE('2025-09-01') AND DATE('2025-09-30')\nGROUP BY q.site, q.is_weekend\nORDER BY q.site, q.is_weekend DESC;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Identify Weekend Coverage Gaps (N:P ratio above policy threshold)",
+        "content": "-- Find sites and dates with coverage gaps (nurse-to-patient ratio above threshold) on Sep weekends\nSELECT s.site,\n       s.date,\n       s.role,\n       s.coverage_gap_flag,\n       s.avg_nurse_to_patient_ratio AS nurse_to_patient_ratio,\n       s.sick_leave_rate\nFROM ${catalog}.${schema}.gold_er_staffing_daily s\nWHERE s.role = 'Nurse'\n  AND s.is_weekend = TRUE\n  AND s.date BETWEEN DATE('2025-09-01') AND DATE('2025-09-30')\n  AND s.coverage_gap_flag = TRUE\nORDER BY s.site, s.date;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Overtime vs Access Quality (Correlation view)",
+        "content": "-- Examine whether overtime hours align with access improvements\nSELECT f.site,\n       f.date,\n       f.overtime_hours_sum,\n       q.lwbs_rate,\n       q.median_door_to_provider_minutes\nFROM ${catalog}.${schema}.gold_er_finance_daily f\nJOIN ${catalog}.${schema}.gold_er_quality_daily q\n  ON f.site = q.site AND f.date = q.date AND f.unit = q.unit\nWHERE f.date BETWEEN DATE('2025-09-01') AND DATE('2025-09-30')\nORDER BY f.site, f.date;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Reimbursement at Risk by Weekend and Site",
+        "content": "-- Summarize reimbursement at risk by site for weekends in Sep-2025\nSELECT f.site,\n       SUM(CAST(f.reimbursement_at_risk_usd AS DOUBLE)) AS weekend_reimbursement_at_risk_usd,\n       MAX(CAST(f.cumulative_reimbursement_at_risk_usd AS DOUBLE)) AS cumulative_reimbursement_at_risk_usd\nFROM ${catalog}.${schema}.gold_er_finance_daily f\nWHERE f.is_weekend = TRUE\n  AND f.date BETWEEN DATE('2025-09-01') AND DATE('2025-09-30')\nGROUP BY f.site\nORDER BY weekend_reimbursement_at_risk_usd DESC;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Weekend Hourly Surge Signature (Arrivals vs N:P)",
+        "content": "-- Show hourly arrivals and nurse-to-patient ratio to visualize surge and coverage\nSELECT o.site,\n       o.date,\n       o.hour_of_day,\n       o.arrivals,\n       o.queue_length_median,\n       ROUND(o.door_to_triage_median,2) AS door_to_triage_median_min,\n       ROUND(o.door_to_provider_median,2) AS door_to_provider_median_min,\n       ROUND(o.nurse_to_patient_ratio,3) AS nurse_to_patient_ratio\nFROM ${catalog}.${schema}.gold_er_operational_hourly o\nWHERE o.is_weekend = TRUE\n  AND o.date BETWEEN DATE('2025-09-01') AND DATE('2025-09-30')\nORDER BY o.site, o.date, o.hour_of_day;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Readmission Exposure on Surge Weekends",
+        "content": "-- Weekend readmission risk and realized readmissions by site in Sep-2025\nSELECT r.site,\n       r.is_weekend,\n       ROUND(AVG(r.avg_readmission_probability),4) AS avg_readmit_prob,\n       ROUND(AVG(CAST(r.high_risk_share AS DOUBLE)),5) AS high_risk_share_avg,\n       SUM(r.realized_readmissions_30d) AS readmissions_30d\nFROM ${catalog}.${schema}.gold_er_readmission_risk_daily r\nWHERE r.date BETWEEN DATE('2025-09-01') AND DATE('2025-09-30')\nGROUP BY r.site, r.is_weekend\nORDER BY r.site, r.is_weekend DESC;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Notes",
+        "content": "This Genie space monitors alignment of ER staffing to patient flow and the resulting quality and financial impacts for SummitCare Health Network during September 2025.\n\nData model and business logic:\n- Use gold tables for executive KPIs and NLQ answers:\n  - gold_er_quality_daily: LWBS rate, median triage wait, median door-to-provider, throughput, satisfaction; includes is_weekend and day_of_week.\n  - gold_er_operational_hourly: Hourly arrivals, throughput, queue length median, waits, effective staffing hours, nurse_to_patient_ratio.\n  - gold_er_staffing_daily: Scheduled/effective hours and sick_leave_rate by role (focus on Nurses); coverage_gap_flag indicates nurse-to-patient ratio above policy threshold.\n  - gold_er_finance_daily: Overtime hours, cost per visit, reimbursement_at_risk_usd and cumulative.\n  - gold_er_readmission_risk_daily: Avg readmission probability, high-risk share, and realized 30-day readmissions by site and weekend flag.\n- Weekend surge focus: Fri\u2013Sun spikes starting 2025-09-05, peaking 09-13\u201309-14 and 09-20\u201309-21; expect increases in arrivals, waits, LWBS (~+15% relative), and reimbursement at risk.\n- Root-cause alignment: Elevated nurse sick leave (doubling to ~6.5% weekends), shift coverage gaps, and HR change logs (09-12 float pool memo; 09-19 on-call expansion) visible via staffing trends.\n- Sensitivity: To test \u201cadd 2 triage nurses on weekend evenings,\u201d compare urban sites\u2019 hourly nurse_to_patient_ratio and waits (hours 18\u201323) before vs after the HR changes; expected effect is shorter waits and lower LWBS.\n\nNLQ guardrails and guidance:\n- When asked to compare weekends vs weekdays, filter by is_weekend and group by site/date or day_of_week.\n- For coverage gaps, use coverage_gap_flag (gold_er_staffing_daily) and nurse_to_patient_ratio (gold_er_operational_hourly). Do not infer causality; describe correlations.\n- For readmission impact, use gold_er_readmission_risk_daily; clarify that probabilities are model-derived and observational.\n- For finance questions, use reimbursement_at_risk_usd and cumulative_reimbursement_at_risk_usd from gold_er_finance_daily; link patterns to LWBS and wait breaches via quality daily.\n\nData quality notes:\n- Minor telemetry delays (<0.1%) handled in silver flow metrics; daily/ hourly medians already smoothed.\n- Some nulls for door-to-provider at hourly granularity; daily medians preferred for executive answers.\n- Synthetic data; no PHI. Readmission probabilities are predictive, not causal.\n\nRecommended analysis patterns:\n- Aggregate by September 2025 date range and segment by site (Urban vs Suburban vs Rural) and is_weekend.\n- Drill from daily KPIs to hourly operational metrics to see evening peak dynamics (18:00\u201323:00).\n- Join staffing daily with quality daily on (site, date) to narrate volume\u2192coverage\u2192quality impacts.\n",
+        "instruction_type": "TEXT_INSTRUCTION"
+      },
+      {
+        "title": "LWBS Rate and Weekend Peaks by Site",
+        "content": "-- Daily LWBS rate and weekend flag\nSELECT site, date, is_weekend, visits_total, lwbs_rate, median_triage_wait_minutes, median_door_to_provider_minutes\nFROM ${catalog}.${schema}.gold_er_quality_daily\nWHERE date BETWEEN DATE('2025-09-01') AND DATE('2025-09-30')\nORDER BY date, site;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Staffing Coverage and Sick Leave (Daily, Nurses)",
+        "content": "-- Nurse coverage and sick leave spikes\nSELECT site, date, is_weekend, role, effective_hours, sick_leave_rate, avg_nurse_to_patient_ratio, coverage_gap_flag\nFROM ${catalog}.${schema}.gold_er_staffing_daily\nWHERE role = 'Nurse' AND date BETWEEN DATE('2025-09-01') AND DATE('2025-09-30')\nORDER BY date, site;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Hourly Arrivals vs Coverage and Waits (Urban Sites)",
+        "content": "-- Hourly operational alignment for surge analysis\nSELECT site, date, hour_of_day, is_weekend, arrivals, throughput, queue_length_median, door_to_triage_median AS triage_wait_median, door_to_provider_median, effective_staffing_hours, nurse_to_patient_ratio\nFROM ${catalog}.${schema}.gold_er_operational_hourly\nWHERE region = 'Urban' AND date BETWEEN DATE('2025-09-01') AND DATE('2025-09-30')\nORDER BY site, date, hour_of_day;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Finance Impact: Overtime and Reimbursement at Risk",
+        "content": "-- Daily finance KPIs with weekend split\nSELECT site, date, is_weekend, overtime_hours_sum, cost_per_visit_avg, reimbursement_at_risk_usd, cumulative_reimbursement_at_risk_usd\nFROM ${catalog}.${schema}.gold_er_finance_daily\nWHERE date BETWEEN DATE('2025-09-01') AND DATE('2025-09-30')\nORDER BY date, site;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Readmission Risk and Realized Readmissions",
+        "content": "-- Daily readmission risk uplift and outcomes\nSELECT site, date, is_weekend, avg_readmission_probability, high_risk_share, realized_readmissions_30d\nFROM ${catalog}.${schema}.gold_er_readmission_risk_daily\nWHERE date BETWEEN DATE('2025-09-01') AND DATE('2025-09-30')\nORDER BY date, site;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Notes",
+        "content": "This Genie space supports executive and operational analysis of SummitCare\u2019s ER weekend surges in Sep-2025: volume \u2192 staffing gaps (effective coverage, sick leave, overtime) \u2192 access/quality impacts (triage wait, door-to-provider, LWBS) \u2192 financial and readmission risk.\n\nData model (use gold first):\n- gold_er_quality_daily: daily LWBS, median waits, throughput, satisfaction by site/date/weekend.\n- gold_er_staffing_daily: scheduled vs effective hours, sick leave rate, avg nurse-to-patient ratio, coverage_gap_flag by site/date/role.\n- gold_er_operational_hourly: hourly arrivals/throughput/queues/waits and staffing hours for within-day patterns.\n- gold_er_finance_daily: overtime and reimbursement-at-risk estimates by site/date/weekend.\n- gold_er_readmission_risk_daily: daily predictive readmission risk and realized 30d readmissions.\n\nJoin keys: {date, site, unit}. Filter unit='ER'. For staffing-to-quality comparisons, typically use role='Nurse'.\n\nBusiness logic notes:\n- is_weekend is precomputed in gold tables.\n- LWBS rate is already computed in gold_er_quality_daily as lwbs_rate.\n- coverage_gap_flag indicates days where staffing coverage fell below policy threshold (derived from operational hourly ratios).\n\nData quality:\n- A small amount of missing wait telemetry exists (null medians on rare days/hours). Prefer daily gold aggregates for executive views; use hourly for peak-hour investigation.\n- Readmission risk is model-derived (not causal).",
+        "instruction_type": "TEXT_INSTRUCTION"
+      },
+      {
+        "title": "Weekend surge & LWBS ranking (Sep-2025)",
+        "content": "-- Rank days in Sep-2025 by LWBS rate, with site contribution\nSELECT\n  date,\n  is_weekend,\n  site,\n  visits_total,\n  lwbs_rate,\n  median_triage_wait_minutes,\n  median_door_to_provider_minutes\nFROM ${catalog}.${schema}.gold_er_quality_daily\nWHERE unit = 'ER'\n  AND date >= DATE('2025-09-01') AND date < DATE('2025-10-01')\nORDER BY lwbs_rate DESC, visits_total DESC;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Coverage gaps joined to quality outcomes (daily)",
+        "content": "-- Connect staffing coverage gaps to LWBS and waits (Nurse role)\nSELECT\n  q.date,\n  q.site,\n  q.region,\n  s.sick_leave_rate,\n  s.avg_nurse_to_patient_ratio,\n  s.coverage_gap_flag,\n  q.lwbs_rate,\n  q.median_triage_wait_minutes,\n  q.median_door_to_provider_minutes\nFROM ${catalog}.${schema}.gold_er_quality_daily q\nJOIN ${catalog}.${schema}.gold_er_staffing_daily s\n  ON q.date = s.date AND q.site = s.site AND q.unit = s.unit\nWHERE q.unit = 'ER'\n  AND s.role = 'Nurse'\n  AND q.date >= DATE('2025-09-01') AND q.date < DATE('2025-10-01')\nORDER BY q.date, q.site;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Hourly peaks on weekends (arrivals, queues, waits)",
+        "content": "-- Identify weekend peak hours by site\nSELECT\n  site,\n  hour_of_day,\n  AVG(arrivals)                AS avg_arrivals,\n  AVG(queue_length_median)     AS avg_queue_median,\n  AVG(door_to_triage_median)   AS avg_triage_wait_mins,\n  AVG(door_to_provider_median) AS avg_dtp_mins,\n  AVG(effective_staffing_hours) AS avg_effective_staffing_hours\nFROM ${catalog}.${schema}.gold_er_operational_hourly\nWHERE unit = 'ER'\n  AND is_weekend = true\n  AND date >= DATE('2025-09-01') AND date < DATE('2025-10-01')\nGROUP BY site, hour_of_day\nORDER BY site, avg_queue_median DESC, avg_arrivals DESC;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Finance impact: overtime vs reimbursement at risk (Sep-2025)",
+        "content": "-- Daily finance view with weekend share\nSELECT\n  date,\n  site,\n  region,\n  is_weekend,\n  overtime_hours_sum,\n  reimbursement_at_risk_usd,\n  cumulative_reimbursement_at_risk_usd\nFROM ${catalog}.${schema}.gold_er_finance_daily\nWHERE unit = 'ER'\n  AND date >= DATE('2025-09-01') AND date < DATE('2025-10-01')\nORDER BY date, site;",
+        "instruction_type": "SQL_INSTRUCTION"
+      },
+      {
+        "title": "Readmission risk vs access metrics (daily, Sep-2025)",
+        "content": "-- Combine readmission risk with access/quality metrics\nSELECT\n  r.date,\n  r.site,\n  r.region,\n  r.is_weekend,\n  r.avg_readmission_probability,\n  r.high_risk_share,\n  q.lwbs_rate,\n  q.median_door_to_provider_minutes\nFROM ${catalog}.${schema}.gold_er_readmission_risk_daily r\nJOIN ${catalog}.${schema}.gold_er_quality_daily q\n  ON r.date = q.date AND r.site = q.site AND r.unit = q.unit\nWHERE r.unit = 'ER'\n  AND r.date >= DATE('2025-09-01') AND r.date < DATE('2025-10-01')\nORDER BY r.avg_readmission_probability DESC, q.lwbs_rate DESC;",
+        "instruction_type": "SQL_INSTRUCTION"
+      }
+    ]
+  },
+  "dashboards": {
+    "lakeview_er_staffing_quality": {
+      "title": "Lakeview ER Staffing, Access, Quality, and Financial Risk",
+      "id": "01f0c1745d8c1d0c96981c0c61780dea"
+    }
+  }
+}

@@ -1,8 +1,8 @@
 {
   "chn": {
     "alias": "chn",
-    "workspace_url": "https://fe-sandbox-chn-etl-demo.cloud.databricks.com",
-    "host": "fe-sandbox-chn-etl-demo.cloud.databricks.com",
+    "workspace_url": "https://adb-7405607609261208.8.azuredatabricks.net",
+    "host": "adb-7405607609261208.8.azuredatabricks.net",
     "token": "YOUR_TOKEN_HERE",
     "mcp_servers": {
       "dbsql": "chn-dbsql",
