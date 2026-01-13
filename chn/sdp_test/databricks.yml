@@ -44,6 +44,10 @@ resources:
       
       # Channel for latest features
       channel: CURRENT
+      
+      # Tags for organization and governance
+      tags:
+        domain: customer
 
 targets:
   dev:
