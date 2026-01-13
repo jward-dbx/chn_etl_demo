@@ -1,73 +1,75 @@
-# Claude Skills Configuration
+# Claude Skills for Databricks Development
 
-This directory contains Claude AI agent skills for the CHN ETL Demo project.
+This directory contains Claude AI agent skills for Databricks development, focusing on modern data engineering patterns and best practices.
 
-## Skills Available
-
-The skills are sourced from the `ssa-projects` repository (Databricks Field Engineering) and include:
+## Available Skills
 
 ### 1. **databricks-dev**
-Guide for Databricks development using CLI, Databricks Connect, SDK and REST API.
-- WorkspaceClient authentication patterns
-- SDK usage best practices
-- CLI configuration and usage
-- REST API patterns
+Core Databricks development patterns and tools.
+
+**Capabilities:**
+- Databricks SDK usage and authentication
+- Databricks CLI commands and workflows
+- Databricks Connect for local development
+- REST API patterns and best practices
+- Configuration management
+
+**Use When:**
+- Setting up Databricks authentication
+- Working with WorkspaceClient
+- Executing CLI commands
+- Making API calls
 
 ### 2. **sdp-writer** (Spark Declarative Pipelines)
-Create and configure Databricks Lakeflow Spark Declarative Pipelines (formerly Delta Live Tables).
+Create and configure Lakeflow Spark Declarative Pipelines (formerly Delta Live Tables).
+
+**Capabilities:**
+- Pipeline creation in SQL or Python
 - Ingestion patterns (Auto Loader, Kafka, Event Hub)
-- Streaming patterns (deduplication, windowing, stateful operations)
-- SCD query patterns
-- DLT migration guide
+- Streaming patterns (deduplication, windowing)
+- SCD (Slowly Changing Dimension) patterns
 - Performance tuning with Liquid Clustering
-- 2025 best practices (serverless compute, CLUSTER BY)
+- DLT migration guidance
+
+**Use When:**
+- Creating new data pipelines
+- Building medallion architecture (bronze/silver/gold)
+- Implementing streaming data flows
+- Migrating from legacy DLT
 
 ### 3. **dabs-writer** (Databricks Asset Bundles)
-Create and configure Databricks Asset Bundles for deployment.
-- SDP guidance
-- Alerts configuration
-- Multi-environment deployment patterns
+Configure Databricks Asset Bundles for multi-environment deployments.
 
-### 4. **python-dev**
-Python development best practices for Databricks projects.
+**Capabilities:**
+- Bundle structure and configuration
+- Pipeline resource definitions
+- Dashboard deployments
+- Job configurations
+- Multi-environment setup (dev/staging/prod)
+- Permissions management
 
-## How It Works
+**Use When:**
+- Setting up CI/CD for Databricks
+- Deploying pipelines across environments
+- Managing Databricks resources as code
+- Configuring alerts and dashboards
 
-- **Location**: `/Users/justin.ward/chn/.claude/skills/` (symlink to `external-skills/ssa-projects/.claude/skills/`)
-- **Source**: Git submodule at `external-skills/ssa-projects/`
-- **Auto-discovery**: Claude automatically discovers and uses skills based on your prompts
-- **No explicit reference needed**: Just describe what you want to do, and Claude will select the appropriate skill
+## How Skills Work
 
-## Usage
+Claude automatically selects and applies relevant skills based on your requests. You don't need to explicitly reference them.
 
-You don't need to explicitly reference skills. Simply provide prompts like:
+**Examples:**
 
-- "Create a Delta Live Tables pipeline for customer data"
-- "Set up a Databricks Asset Bundle for this project"
-- "Show me how to use WorkspaceClient to list clusters"
-- "Create an Auto Loader ingestion pattern for JSON files"
+- *"Create a Delta Live Tables pipeline"* → Uses `sdp-writer`
+- *"Set up Databricks authentication"* → Uses `databricks-dev`
+- *"Configure a DAB for deployment"* → Uses `dabs-writer`
 
-Claude will automatically select and apply the relevant skills.
-
-## Updating Skills
-
-To get the latest skills from the upstream repository:
-
-```bash
-cd /Users/justin.ward
-git submodule update --remote chn/external-skills/ssa-projects
-cd chn
-git add external-skills/ssa-projects
-git commit -m "Update ssa-projects skills"
-git push
-```
-
-## Structure
+## Project Structure
 
 ```
 .claude/
 ├── README.md (this file)
-└── skills/ -> ../external-skills/ssa-projects/.claude/skills/
+└── skills/
     ├── databricks-dev/
     │   └── SKILL.md
     ├── sdp-writer/
@@ -78,16 +80,49 @@ git push
     │   ├── dlt-migration-guide.md
     │   ├── performance-tuning.md
     │   └── python-api-versions.md
-    ├── dabs-writer/
-    │   ├── SKILL.md
-    │   ├── SDP_guidance.md
-    │   └── alerts_guidance.md
-    └── python-dev/
-        └── SKILL.md
+    └── dabs-writer/
+        ├── SKILL.md
+        ├── SDP_guidance.md
+        └── alerts_guidance.md
 ```
 
-## Notes
+## Best Practices
 
-- Skills are read-only (sourced from external submodule)
-- Do not modify skills directly; contribute changes upstream to `databricks-field-eng/ssa-projects`
-- The symlink ensures Claude can discover skills in the standard `.claude/skills/` location
+### 1. **Modern Patterns (2025)**
+- Use serverless compute for auto-scaling
+- Use `CLUSTER BY` (Liquid Clustering) instead of `PARTITION BY`
+- Implement proper data lineage with `LIVE` keyword
+- Organize pipelines with `root_path` pattern
+
+### 2. **Development Workflow**
+- Use development mode for testing
+- Implement data quality checks
+- Follow medallion architecture
+- Version control all configurations
+
+### 3. **Deployment**
+- Use Databricks Asset Bundles (DABs)
+- Separate dev/staging/prod environments
+- Implement proper permissions
+- Automate with CI/CD
+
+## Related Documentation
+
+- **SDP Guidance**: `/docs/sdp-guidance/` - Comprehensive guides for Spark Declarative Pipelines
+- **Setup**: `/docs/setup/` - Workspace and MCP configuration
+- **Examples**: `/sdp_test/` - Working pipeline example
+
+## Skill Maintenance
+
+These skills are maintained as part of this project. To update:
+
+1. Edit skill files in `.claude/skills/<skill-name>/`
+2. Test changes with Claude
+3. Commit and push updates
+
+## References
+
+- [Databricks Documentation](https://docs.databricks.com/)
+- [Delta Live Tables](https://docs.databricks.com/delta-live-tables/)
+- [Databricks Asset Bundles](https://docs.databricks.com/dev-tools/bundles/)
+- [Databricks SDK](https://docs.databricks.com/dev-tools/sdk-python.html)
