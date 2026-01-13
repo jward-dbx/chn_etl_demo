@@ -12,8 +12,24 @@
 
 ## Current Run
 
-- **Update ID**: `ce08400d-2824-40a2-8e61-60f429886a40`
-- **Status**: WAITING_FOR_RESOURCES (serverless compute spinning up)
+- **Latest Update ID**: `70a2684e-ec9c-47f0-bbf1-7727fae9e893`
+- **Status**: Running (fixed table naming issue)
+- **Previous Update ID**: `ce08400d-2824-40a2-8e61-60f429886a40` (failed due to multipart table name error)
+
+### Issue Fixed
+
+The initial deployment failed with error:
+```
+[UNSUPPORTED_SQL_STATEMENT] Multipart table names is not supported.
+```
+
+**Root Cause**: Used schema-qualified table names (e.g., `cursor.customer`) in CREATE statements.
+
+**Solution**: In SDP, when `target` schema is specified in pipeline config, use table name only in SQL:
+- ❌ `CREATE TABLE cursor.customer`
+- ✅ `CREATE TABLE customer`
+
+See `docs/sdp-guidance/table-naming-conventions.md` for full guidance.
 
 ## Pipeline URL
 

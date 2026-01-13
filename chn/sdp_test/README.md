@@ -60,9 +60,11 @@ You can also create the pipeline directly via the Databricks UI:
 Each SQL file creates a streaming table that reads from the source landing table and writes to the target cursor schema:
 
 ```sql
-CREATE OR REFRESH STREAMING TABLE cursor.{table_name}
+CREATE OR REFRESH STREAMING TABLE {table_name}
 AS SELECT * FROM STREAM(dbx_chn_ward_demo.landing_ss_aw.{table_name})
 ```
+
+**Important**: Do NOT use schema-qualified names (e.g., `cursor.table_name`) in the CREATE statement. The `target` schema is specified in `databricks.yml`. See `docs/sdp-guidance/table-naming-conventions.md` for details.
 
 This creates a continuous streaming pipeline that:
 - Processes changes incrementally
