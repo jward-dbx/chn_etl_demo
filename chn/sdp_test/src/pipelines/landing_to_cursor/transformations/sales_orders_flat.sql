@@ -1,6 +1,8 @@
 -- Flat sales order table joining order details with product information
 -- Note: Table name only (no schema prefix) because target schema is set in pipeline config
-CREATE OR REFRESH STREAMING TABLE sales_orders_flat
+-- DOWNSTREAM TABLE: Reads from pipeline's own tables, not source
+-- Using LIVE table for joins (streaming joins have limitations)
+CREATE OR REFRESH LIVE TABLE sales_orders_flat
 AS SELECT 
   -- Sales Order Detail fields
   sod.SalesOrderID,
@@ -30,6 +32,6 @@ AS SELECT
   sod.OrderQty * sod.UnitPrice as ExtendedPrice,
   (sod.OrderQty * sod.UnitPrice) - sod.LineTotal as TotalDiscount
 
-FROM STREAM(dbx_chn_ward_demo.landing_ss_aw.salesorderdetail) sod
-INNER JOIN STREAM(dbx_chn_ward_demo.landing_ss_aw.product) p
+FROM salesorderdetail sod
+INNER JOIN product p
   ON sod.ProductID = p.ProductID
