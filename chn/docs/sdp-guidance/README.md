@@ -16,6 +16,18 @@ This directory contains guidance and best practices for creating Spark Declarati
 - ❌ Old: List every file in `libraries`
 - ✅ New: Set `root_path` + use `glob` patterns
 
+### [Downstream Table References](./downstream-table-references.md) ⚠️ **Critical**
+**How to reference tables within the same pipeline**
+
+- Using `LIVE` keyword for pipeline table references
+- Proper syntax for downstream transformations
+- Creating correct DAG lineage
+- Troubleshooting TABLE_OR_VIEW_NOT_FOUND errors
+
+**TL;DR**: To read from tables in the same pipeline, use the `LIVE` keyword:
+- ❌ `FROM STREAM(salesorderdetail)`
+- ✅ `FROM STREAM(LIVE.salesorderdetail)`
+
 ### [Table Naming Conventions](./table-naming-conventions.md)
 **Critical guidance on table naming in SDP SQL files**
 
