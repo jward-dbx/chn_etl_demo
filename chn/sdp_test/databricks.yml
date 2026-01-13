@@ -44,6 +44,8 @@ resources:
             path: ./product.sql
         - file:
             path: ./salesorderdetail.sql
+        - file:
+            path: ./sales_orders_flat.sql
       
       # Channel for latest features
       channel: CURRENT
