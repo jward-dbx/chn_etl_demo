@@ -1,0 +1,56 @@
+bundle:
+  name: sdp_landing_to_cursor
+
+variables:
+  catalog:
+    description: Unity Catalog name
+    default: dbx_chn_ward_demo
+  
+  source_schema:
+    description: Source schema name
+    default: landing_ss_aw
+  
+  target_schema:
+    description: Target schema name
+    default: cursor
+
+resources:
+  pipelines:
+    landing_to_cursor_pipeline:
+      name: "[${workspace.current_user.short_name}] Landing to Cursor Pipeline"
+      
+      catalog: ${var.catalog}
+      target: ${var.target_schema}
+      
+      # Use serverless compute (2025 best practice)
+      serverless: true
+      
+      # Pipeline configuration
+      configuration:
+        source_catalog: ${var.catalog}
+        source_schema: ${var.source_schema}
+      
+      # Development mode
+      development: true
+      
+      # Continuous processing
+      continuous: false
+      
+      # SQL files for the pipeline
+      libraries:
+        - file:
+            path: ./customer.sql
+        - file:
+            path: ./product.sql
+        - file:
+            path: ./salesorderdetail.sql
+      
+      # Channel for latest features
+      channel: CURRENT
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://adb-7405607609261208.8.azuredatabricks.net
