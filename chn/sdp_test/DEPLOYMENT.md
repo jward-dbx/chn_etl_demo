@@ -12,9 +12,11 @@
 
 ## Current Run
 
-- **Latest Update ID**: `70a2684e-ec9c-47f0-bbf1-7727fae9e893`
-- **Status**: Running (fixed table naming issue)
-- **Previous Update ID**: `ce08400d-2824-40a2-8e61-60f429886a40` (failed due to multipart table name error)
+- **Latest Update ID**: `23bcc2c3-b319-4591-ae1d-751250dab45d`
+- **Status**: COMPLETED ✓ (added sales_orders_flat table)
+- **Previous Updates**: 
+  - `70a2684e-ec9c-47f0-bbf1-7727fae9e893` (completed - fixed table naming issue)
+  - `ce08400d-2824-40a2-8e61-60f429886a40` (failed - multipart table name error)
 
 ### Issue Fixed
 
@@ -48,6 +50,7 @@ https://adb-7405607609261208.8.azuredatabricks.net/#joblist/pipelines/249c1f9a-0
 - `dbx_chn_ward_demo.cursor.customer`
 - `dbx_chn_ward_demo.cursor.product`
 - `dbx_chn_ward_demo.cursor.salesorderdetail`
+- `dbx_chn_ward_demo.cursor.sales_orders_flat` (joined table: 542 records)
 
 ## Manual Trigger
 
@@ -75,3 +78,21 @@ SQL files uploaded to:
 - `/Users/justin.ward@databricks.com/sdp_test/customer.sql`
 - `/Users/justin.ward@databricks.com/sdp_test/product.sql`
 - `/Users/justin.ward@databricks.com/sdp_test/salesorderdetail.sql`
+- `/Users/justin.ward@databricks.com/sdp_test/sales_orders_flat.sql`
+
+## Sales Orders Flat Table
+
+The `sales_orders_flat` table is a denormalized view combining:
+- Sales order details (quantities, prices, discounts)
+- Product information (name, specifications, pricing)
+- Calculated fields (ExtendedPrice, TotalDiscount)
+
+**Join Logic**: `salesorderdetail` INNER JOIN `product` ON `ProductID`
+
+**Record Count**: 542 records
+
+**Key Fields**:
+- Order information: SalesOrderID, SalesOrderDetailID, OrderQty
+- Pricing: UnitPrice, UnitPriceDiscount, LineTotal
+- Product details: ProductName, ProductNumber, ProductColor, StandardCost, ListPrice
+- Calculated: ExtendedPrice (Qty × UnitPrice), TotalDiscount (ExtendedPrice - LineTotal)
