@@ -25,6 +25,12 @@ resources:
       # Use serverless compute (2025 best practice)
       serverless: true
       
+      # Modern pattern: Use root_path with glob for auto-discovery
+      root_path: ./src/pipelines/landing_to_cursor
+      libraries:
+        - glob:
+            include: ./src/pipelines/landing_to_cursor/transformations/**
+      
       # Pipeline configuration
       configuration:
         source_catalog: ${var.catalog}
@@ -35,17 +41,6 @@ resources:
       
       # Continuous processing
       continuous: false
-      
-      # SQL files for the pipeline
-      libraries:
-        - file:
-            path: ./customer.sql
-        - file:
-            path: ./product.sql
-        - file:
-            path: ./salesorderdetail.sql
-        - file:
-            path: ./sales_orders_flat.sql
       
       # Channel for latest features
       channel: CURRENT

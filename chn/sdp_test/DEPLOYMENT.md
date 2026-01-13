@@ -12,11 +12,46 @@
 
 ## Current Run
 
-- **Latest Update ID**: `23bcc2c3-b319-4591-ae1d-751250dab45d`
-- **Status**: COMPLETED ✓ (added sales_orders_flat table)
+- **Latest Update ID**: `fc326672-9303-49be-8b20-fa9890c662fb`
+- **Status**: COMPLETED ✓ (migrated to root_path pattern)
 - **Previous Updates**: 
+  - `23bcc2c3-b319-4591-ae1d-751250dab45d` (completed - added sales_orders_flat table)
   - `70a2684e-ec9c-47f0-bbf1-7727fae9e893` (completed - fixed table naming issue)
   - `ce08400d-2824-40a2-8e61-60f429886a40` (failed - multipart table name error)
+
+### Modern Root Path Pattern
+
+**Migration**: Reorganized from individual file paths to modern root_path pattern.
+
+**Old Structure** (flat files):
+```
+sdp_test/
+├── customer.sql
+├── product.sql
+├── salesorderdetail.sql
+└── sales_orders_flat.sql
+```
+
+**New Structure** (organized):
+```
+sdp_test/
+└── src/
+    └── pipelines/
+        └── landing_to_cursor/
+            └── transformations/
+                ├── customer.sql
+                ├── product.sql
+                ├── salesorderdetail.sql
+                └── sales_orders_flat.sql
+```
+
+**Benefits**:
+- ✅ Auto-discovery of new files (with DABs glob patterns)
+- ✅ Better organization and scalability
+- ✅ Clear separation of concerns
+- ✅ Supports multiple pipelines in one project
+
+See `docs/sdp-guidance/root-path-pattern.md` for complete guide.
 
 ### Issue Fixed
 

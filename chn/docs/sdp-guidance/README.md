@@ -4,6 +4,18 @@ This directory contains guidance and best practices for creating Spark Declarati
 
 ## Available Guides
 
+### [Root Path Pattern](./root-path-pattern.md) ⭐ **Recommended**
+**Modern pipeline organization using root_path and glob patterns**
+
+- Old vs new pattern comparison
+- Benefits of root path approach
+- Recommended folder structures
+- Migration guide
+
+**TL;DR**: Use `root_path` with organized folders instead of listing individual files:
+- ❌ Old: List every file in `libraries`
+- ✅ New: Set `root_path` + use `glob` patterns
+
 ### [Table Naming Conventions](./table-naming-conventions.md)
 **Critical guidance on table naming in SDP SQL files**
 

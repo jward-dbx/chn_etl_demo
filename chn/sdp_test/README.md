@@ -14,6 +14,26 @@ This Spark Declarative Pipeline (SDP) copies tables from the `landing_ss_aw` sch
 - **Target**: `dbx_chn_ward_demo.cursor.*`
 - **Compute**: Serverless (2025 best practice)
 - **Processing**: Streaming tables for real-time updates
+- **Organization**: Modern root_path pattern with structured folders
+
+## Project Structure
+
+```
+sdp_test/
+├── databricks.yml                 # Pipeline configuration
+├── src/
+│   └── pipelines/
+│       └── landing_to_cursor/
+│           └── transformations/   # All SQL transformation files
+│               ├── customer.sql
+│               ├── product.sql
+│               ├── salesorderdetail.sql
+│               └── sales_orders_flat.sql
+├── README.md
+└── DEPLOYMENT.md
+```
+
+**Note**: This project uses the modern **root_path pattern** for better organization and scalability. See `docs/sdp-guidance/root-path-pattern.md` for details.
 
 ## Deployment
 
