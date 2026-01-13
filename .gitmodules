@@ -1,0 +1,3 @@
+[submodule "chn/external-skills/ssa-projects"]
+	path = chn/external-skills/ssa-projects
+	url = https://github.com/databricks-field-eng/ssa-projects.git
