@@ -24,6 +24,7 @@ Create SDP pipelines in SQL or Python with 2025 best practices.
 
 Load these modules for detailed patterns:
 
+- **[lakeflow-connect.md](lakeflow-connect.md)** - Managed ingestion from databases (SQL Server, PostgreSQL, etc.)
 - **[ingestion-patterns.md](ingestion-patterns.md)** - Auto Loader, Kafka, Event Hub, file formats
 - **[streaming-patterns.md](streaming-patterns.md)** - Deduplication, windowing, stateful operations
 - **[scd-query-patterns.md](scd-query-patterns.md)** - Querying SCD2 history tables
@@ -94,6 +95,8 @@ All examples use Unity Catalog three-part names: `catalog.schema.table`
 
 ### Bronze Layer (Ingestion)
 
+**Option 1: Cloud Storage Files (Auto Loader)**
+
 ```sql
 CREATE OR REPLACE STREAMING TABLE catalog.schema.bronze_orders
 CLUSTER BY (order_date, region)
@@ -104,6 +107,18 @@ FROM read_files('/mnt/raw/orders/', format => 'json',
 ```
 
 **See [ingestion-patterns.md](ingestion-patterns.md)** for Auto Loader options, Kafka/Event Hub sources, schema evolution
+
+**Option 2: Database Sources (Lakeflow Connect)**
+
+Use Lakeflow Connect for managed ingestion from databases (SQL Server, PostgreSQL, MySQL, etc.) with automatic CDC:
+
+```yaml
+# Created via Lakeflow Connect UI or DABs
+# No SQL code needed - managed by connector
+# Results in bronze streaming tables in Unity Catalog
+```
+
+**See [lakeflow-connect.md](lakeflow-connect.md)** for creating database ingestion pipelines, connections, and CDC setup
 
 ### Silver Layer (Cleansing)
 
