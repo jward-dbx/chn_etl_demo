@@ -1,0 +1,8 @@
+command:
+  - python
+  - app.py
+
+resources:
+  - name: healthcare-ai-etl-ui
+    description: Healthcare AI ETL Platform - Interactive UI Demo
+    sql_warehouse_id: null

@@ -1,0 +1,29 @@
+bundle:
+  name: healthcare-ai-etl-ui
+
+workspace:
+  host: https://adb-7405607609261208.8.azuredatabricks.net
+
+resources:
+  apps:
+    healthcare_ai_etl_ui:
+      name: "[${workspace.current_user.short_name}] Healthcare AI ETL Platform"
+      description: "Interactive UI demo showcasing AI-driven data pipelines on Databricks Lakehouse"
+      
+      resources:
+        - name: main
+          description: "Main Flask application server"
+          
+      source_code_path: ./
+      
+artifacts:
+  default:
+    type: whl
+    path: ./
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      root_path: /Users/${workspace.current_user.userName}/apps/healthcare-ai-etl-ui
